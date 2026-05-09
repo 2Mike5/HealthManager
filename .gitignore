@@ -1,0 +1,33 @@
+# ── Node / HBuilder ──
+node_modules/
+unpackage/
+dist/
+*.log
+
+# ── Python ──
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# ── IDE ──
+.idea/
+*.swp
+*.swo
+.hbuilderx/
+
+# ── OS ──
+.DS_Store
+Thumbs.db
+
+# ── Secrets ──
+server/config.py
+
+# ── Backup / DB ──
+* - 副本.*
+*.bak
+*.db
+
+# ── Claude ──
+.claude/

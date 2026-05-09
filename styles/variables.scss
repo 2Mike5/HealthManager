@@ -1,0 +1,64 @@
+// ════════════════════════════════════
+// 全局设计令牌 — 白天模式
+// ════════════════════════════════════
+
+// ── 品牌色 ──
+$primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+$primary-light: #667eea;
+$primary-dark: #5a3d8a;
+
+// ── 功能色 ──
+$color-steps: #536DFE;
+$color-heart: #FF6B6B;
+$color-sleep: #4ECDC4;
+$color-water: #45B7D1;
+$color-exercise: #FFA94D;
+$color-mood: #F783AC;
+$color-score: #7C4DFF;
+
+// ── 页面背景 ──
+$bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #e4e9f2 100%);
+$bg-card: rgba(255, 255, 255, 0.72);
+
+// ── 文字 ──
+$text-primary: #1a1a2e;
+$text-secondary: #666;
+$text-tertiary: #999;
+
+// ── 间距 & 圆角 ──
+$radius-sm: 12rpx;
+$radius-md: 16rpx;
+$radius-lg: 20rpx;
+$radius-xl: 24rpx;
+$spacing-xs: 8rpx;
+$spacing-sm: 16rpx;
+$spacing-md: 24rpx;
+$spacing-lg: 32rpx;
+$spacing-xl: 40rpx;
+
+// ── 阴影 ──
+$shadow-sm: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+$shadow-md: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+$shadow-lg: 0 8rpx 32rpx rgba(0, 0, 0, 0.08);
+$shadow-glow: 0 0 20rpx rgba(124, 77, 255, 0.3);
+
+// ── 动画 ──
+$transition-fast: 0.2s ease;
+$transition-normal: 0.3s ease;
+$transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+
+// ── 卡片入场延迟（stagger）──
+$card-delay-1: 0.05s;
+$card-delay-2: 0.15s;
+$card-delay-3: 0.25s;
+$card-delay-4: 0.35s;
+$card-delay-5: 0.45s;
+
+// ── 夜间模式覆盖 ──
+[data-theme="dark"] {
+  --bg-page: #0f0f23;
+  --bg-card: rgba(255, 255, 255, 0.06);
+  --text-primary: #e8e8f0;
+  --text-secondary: #a0a0b8;
+  --text-tertiary: #6a6a82;
+}

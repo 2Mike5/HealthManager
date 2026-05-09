@@ -1,0 +1,49 @@
+{
+	"pages": [
+		{
+			"path": "pages/dashboard/index",
+			"style": {
+				"navigationBarTitleText": "健康看板",
+				"navigationBarBackgroundColor": "#4CAF50",
+				"navigationBarTextStyle": "white"
+			}
+		},
+		{
+			"path": "pages/ai/index",
+			"style": {
+				"navigationBarTitleText": "AI 助手",
+				"navigationBarBackgroundColor": "#2196F3",
+				"navigationBarTextStyle": "white"
+			}
+		}
+	],
+	"globalStyle": {
+		"navigationBarTextStyle": "black",
+		"navigationBarTitleText": "uni-app",
+		"navigationBarBackgroundColor": "#F8F8F8",
+		"backgroundColor": "#F8F8F8",
+		"app-plus": {
+			"background": "#efeff4"
+		}
+	},
+	"tabBar": {
+		"color": "#999999",
+		"selectedColor": "#4CAF50",
+		"backgroundColor": "#ffffff",
+		"borderStyle": "black",
+		"list": [
+			{
+				"pagePath": "pages/dashboard/index",
+				"text": "健康看板",
+				"iconPath": "static/tab/dashboard.png",
+				"selectedIconPath": "static/tab/dashboard_active.png"
+			},
+			{
+				"pagePath": "pages/ai/index",
+				"text": "AI 助手",
+				"iconPath": "static/tab/ai.png",
+				"selectedIconPath": "static/tab/ai_active.png"
+			}
+		]
+	}
+}

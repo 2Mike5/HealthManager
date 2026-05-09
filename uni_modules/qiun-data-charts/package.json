@@ -1,0 +1,38 @@
+{
+  "id": "qiun-data-charts",
+  "displayName": "秋云图表 uCharts",
+  "version": "2.5.0",
+  "description": "uCharts跨平台图表库，支持折线图、柱状图、饼图、K线图、雷达图、地图等，全端全平台支持。",
+  "keywords": ["uCharts", "图表", "秋云", "可视化", "柱状图", "折线图", "饼图"],
+  "repository": "https://gitee.com/uCharts/uCharts",
+  "engines": {
+    "HBuilderX": "^3.0.0"
+  },
+  "uni_modules": {
+    "dependencies": [],
+    "encrypt": [],
+    "platforms": {
+      "client": {
+        "App": {
+          "app-vue": "y",
+          "app-nvue": "y"
+        },
+        "H5-mobile": {
+          "Safari": "y",
+          "Android Browser": "y"
+        },
+        "小程序": {
+          "微信": "y",
+          "阿里": "y",
+          "百度": "y",
+          "字节跳动": "y",
+          "QQ": "y"
+        },
+        "Vue": {
+          "vue2": "y",
+          "vue3": "y"
+        }
+      }
+    }
+  }
+}
