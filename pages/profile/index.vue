@@ -113,7 +113,7 @@ export default {
 			fetchRecords(dateStr, dateStr).then(records => {
 				if (records && records.length > 0) {
 					const r = records[0]
-					this.todayBurnCalories = calcExerciseCalories(r.exercise_type, r.exercise)
+					this.todayBurnCalories = calcExerciseCalories(r.exerciseType, r.exercise)
 				}
 			}).catch(() => {})
 		},

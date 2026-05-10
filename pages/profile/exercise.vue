@@ -44,9 +44,9 @@
 			</view>
 			<view v-for="(item, i) in exerciseList" :key="i" class="exercise-item">
 				<text class="ex-date">{{ item.date }}</text>
-				<text class="ex-type">{{ item.exercise_type || '运动' }}</text>
+				<text class="ex-type">{{ item.exerciseType || '运动' }}</text>
 				<text class="ex-duration">{{ item.exercise }}分钟</text>
-				<text class="ex-cal">{{ calcCalories(item.exercise_type, item.exercise) }}千卡</text>
+				<text class="ex-cal">{{ calcCalories(item.exerciseType, item.exercise) }}千卡</text>
 			</view>
 		</view>
 	</view>
@@ -84,7 +84,7 @@ export default {
 		mostType() {
 			const types = {}
 			this.weekRecords.forEach(r => {
-				const t = r.exercise_type || '其他'
+				const t = r.exerciseType || '其他'
 				types[t] = (types[t] || 0) + 1
 			})
 			let maxType = '无'
@@ -95,7 +95,7 @@ export default {
 			return maxType
 		},
 		weekTotalCalories() {
-			return this.weekRecords.reduce((sum, r) => sum + calcExerciseCalories(r.exercise_type, r.exercise), 0)
+			return this.weekRecords.reduce((sum, r) => sum + calcExerciseCalories(r.exerciseType, r.exercise), 0)
 		}
 	},
 	onShow() {
