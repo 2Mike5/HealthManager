@@ -37,6 +37,18 @@ COLORS = ['#667eea', '#4CAF50', '#FF6B6B', '#45B7D1', '#FFA94D',
           '#F783AC', '#7C4DFF', '#26A69A', '#EF5350', '#42A5F5']
 
 
+def _num(val, decimals=1):
+    """安全取数值，非数值返回 0"""
+    if val is None:
+        return 0
+    if not isinstance(val, (int, float)):
+        try:
+            val = float(val)
+        except (ValueError, TypeError):
+            return 0
+    return round(val, decimals)
+
+
 def _fill_template(template, row):
     """将模板中的 {field_name} 替换为 row 中的实际值"""
     if not template or not row:
@@ -81,7 +93,7 @@ def _build_chart_config(chart_type, rows, fields=None, time_label='', metric_lab
                 if val:
                     series.append({
                         'name': field_labels[i],
-                        'data': round(val, 1)
+                        'data': _num(val)
                     })
             if not series:
                 return None
@@ -97,7 +109,7 @@ def _build_chart_config(chart_type, rows, fields=None, time_label='', metric_lab
                     counts[val] = counts.get(val, 0) + 1
                 series = [{'name': k, 'data': v} for k, v in counts.items()]
             else:
-                series = [{'name': r.get('date', str(i)), 'data': round(r.get(fields[0]) or 0, 1)}
+                series = [{'name': r.get('date', str(i)), 'data': _num(r.get(fields[0]))}
                           for i, r in enumerate(rev)]
             chart_data = {'series': series}
 
@@ -119,7 +131,7 @@ def _build_chart_config(chart_type, rows, fields=None, time_label='', metric_lab
     if chart_type == 'radar':
         row = rev[0] if len(rev) == 1 else rev[-1]
         categories = field_labels
-        data = [round(row.get(f) or 0, 1) for f in fields]
+        data = [_num(row.get(f)) for f in fields]
         chart_data = {'categories': categories, 'series': [{'name': metric_label or '健康指标', 'data': data}]}
         opts = {
             'legend': {'show': False},
@@ -142,12 +154,12 @@ def _build_chart_config(chart_type, rows, fields=None, time_label='', metric_lab
     if has_multiple_fields and len(rev) == 1:
         row = rev[0]
         categories = field_labels
-        series = [{'name': time_label or '今日', 'data': [round(row.get(f) or 0, 1) for f in fields]}]
+        series = [{'name': time_label or '今日', 'data': [_num(row.get(f)) for f in fields]}]
     else:
         categories = [r.get('date', '')[-5:] for r in rev]
         series = []
         for i, f in enumerate(fields):
-            vals = [round(r.get(f) or 0, 1) for r in rev]
+            vals = [_num(r.get(f)) for r in rev]
             series.append({'name': field_labels[i], 'data': vals})
 
     base_opts = {
@@ -230,7 +242,7 @@ def process_question(question, messages=None):
                 answer = _fill_template(answer_template, rows[0])
             else:
                 first_field = next((k for k in rows[0] if k != 'date' and rows[0][k] is not None), 'steps')
-                vals = [r[first_field] or 0 for r in rows]
+                vals = [_num(r.get(first_field)) for r in rows]
                 avg_val = round(sum(vals) / len(vals), 1)
                 answer = answer_template.replace('{value}', str(avg_val)).replace('{{value}}', str(avg_val))
                 # Also fill per-row templates for multi-row
