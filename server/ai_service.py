@@ -88,8 +88,17 @@ def _build_chart_config(chart_type, rows, fields=None, time_label='', metric_lab
             chart_data = {'series': series}
         else:
             # 多行单字段 → 每行一个扇区
-            series = [{'name': r.get('date', str(i)), 'data': round(r.get(fields[0]) or 0, 1)}
-                      for i, r in enumerate(rev)]
+            first_val = rev[0].get(fields[0]) if rev else None
+            if isinstance(first_val, str):
+                # 文本字段（如 exercise_type）：按值计数聚合
+                counts = {}
+                for r in rev:
+                    val = r.get(fields[0]) or '未知'
+                    counts[val] = counts.get(val, 0) + 1
+                series = [{'name': k, 'data': v} for k, v in counts.items()]
+            else:
+                series = [{'name': r.get('date', str(i)), 'data': round(r.get(fields[0]) or 0, 1)}
+                          for i, r in enumerate(rev)]
             chart_data = {'series': series}
 
         opts = {
