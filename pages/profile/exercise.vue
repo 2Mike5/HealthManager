@@ -25,6 +25,12 @@
 					<text class="stat-unit"></text>
 					<text class="stat-label">最常见类型</text>
 				</view>
+				<view class="stat-divider"></view>
+				<view class="stat-item">
+					<text class="stat-num">{{ weekTotalCalories }}</text>
+					<text class="stat-unit">千卡</text>
+					<text class="stat-label">总消耗</text>
+				</view>
 			</view>
 		</view>
 
@@ -40,13 +46,14 @@
 				<text class="ex-date">{{ item.date }}</text>
 				<text class="ex-type">{{ item.exercise_type || '运动' }}</text>
 				<text class="ex-duration">{{ item.exercise }}分钟</text>
+				<text class="ex-cal">{{ calcCalories(item.exercise_type, item.exercise) }}千卡</text>
 			</view>
 		</view>
 	</view>
 </template>
 
 <script>
-import { fetchRecords } from '@/utils/api'
+import { fetchRecords, calcExerciseCalories } from '@/utils/api'
 import { getWeekRange } from '@/utils/mock'
 
 export default {
@@ -86,6 +93,9 @@ export default {
 				if (c > maxCount) { maxType = t; maxCount = c }
 			}
 			return maxType
+		},
+		weekTotalCalories() {
+			return this.weekRecords.reduce((sum, r) => sum + calcExerciseCalories(r.exercise_type, r.exercise), 0)
 		}
 	},
 	onShow() {
@@ -103,6 +113,9 @@ export default {
 			}).catch(() => {}).finally(() => {
 				this.loading = false
 			})
+		},
+		calcCalories(type, minutes) {
+			return calcExerciseCalories(type, minutes)
 		}
 	}
 }
@@ -221,5 +234,13 @@ export default {
 	font-size: 26rpx;
 	color: #667eea;
 	font-weight: 500;
+}
+
+.ex-cal {
+	font-size: 24rpx;
+	color: #FF6B6B;
+	font-weight: 500;
+	width: 100rpx;
+	text-align: right;
 }
 </style>

@@ -17,13 +17,13 @@
 				<text class="stat-num">{{ latestWeight ? latestWeight.weight + 'kg' : '--' }}</text>
 				<text class="stat-label">当前体重</text>
 			</view>
-			<view class="stat-item glass-card" @tap="goWeight">
-				<text class="stat-num">{{ latestWeight && latestWeight.bmi ? latestWeight.bmi : '--' }}</text>
-				<text class="stat-label">BMI</text>
+			<view class="stat-item glass-card" @tap="goExercise">
+				<text class="stat-num">{{ todayBurnCalories || '--' }}</text>
+				<text class="stat-label">今日消耗</text>
 			</view>
 			<view class="stat-item glass-card" @tap="goDiet">
 				<text class="stat-num">{{ todayCalories || '--' }}</text>
-				<text class="stat-label">今日热量</text>
+				<text class="stat-label">今日摄入</text>
 			</view>
 		</view>
 
@@ -66,7 +66,7 @@
 </template>
 
 <script>
-import { getProfile, getLatestWeight, getDietSummary, updateProfile } from '@/utils/api'
+import { getProfile, getLatestWeight, getDietSummary, updateProfile, fetchRecords, calcExerciseCalories } from '@/utils/api'
 
 export default {
 	data() {
@@ -74,6 +74,7 @@ export default {
 			userInfo: {},
 			latestWeight: null,
 			todayCalories: 0,
+			todayBurnCalories: 0,
 			showProfileEdit: false,
 			editNickname: '',
 			editHeight: '',
@@ -106,6 +107,14 @@ export default {
 			const dateStr = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0')
 			getDietSummary(dateStr).then(res => {
 				this.todayCalories = res.total_calories || 0
+			}).catch(() => {})
+
+			// 加载今日运动消耗
+			fetchRecords(dateStr, dateStr).then(records => {
+				if (records && records.length > 0) {
+					const r = records[0]
+					this.todayBurnCalories = calcExerciseCalories(r.exercise_type, r.exercise)
+				}
 			}).catch(() => {})
 		},
 		goWeight() {

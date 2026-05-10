@@ -79,6 +79,13 @@
 				<text class="field-label">运动时长 (分钟)</text>
 				<input class="field-input" v-model="form.exercise" type="number" placeholder="0" placeholder-class="ph" />
 			</view>
+			<view class="field-row">
+				<text class="field-label">预估消耗</text>
+				<view class="cal-display">
+					<input class="field-input" v-model="form.caloriesBurned" type="digit" placeholder="自动计算" placeholder-class="ph" />
+					<text class="cal-unit">千卡</text>
+				</view>
+			</view>
 		</view>
 
 		<!-- Section 3: 体重记录 -->
@@ -151,7 +158,7 @@
 </template>
 
 <script>
-import { createRecord, createWeightRecord, createDietRecord, getProfile } from '@/utils/api'
+import { createRecord, createWeightRecord, createDietRecord, getProfile, calcExerciseCalories } from '@/utils/api'
 
 export default {
 	data() {
@@ -187,6 +194,10 @@ export default {
 			return this.form.foodEntries.reduce((s, e) => s + (parseFloat(e.calories) || 0), 0)
 		}
 	},
+	watch: {
+		'form.exercise'() { this.autoCalcCalories() },
+		exerciseIndex() { this.autoCalcCalories() }
+	},
 	onShow() {
 		this.loadUserProfile()
 	},
@@ -201,6 +212,7 @@ export default {
 				water: 6,
 				mood: 3,
 				exercise: '',
+				caloriesBurned: '',
 				weight: '',
 				bodyFat: '',
 				foodEntries: []
@@ -229,6 +241,14 @@ export default {
 		},
 		onExerciseTypeChange(e) {
 			this.exerciseIndex = e.detail.value
+		},
+		autoCalcCalories() {
+			if (this.exerciseIndex > 0 && this.form.exercise > 0) {
+				const cal = calcExerciseCalories(this.exerciseTypes[this.exerciseIndex], this.form.exercise)
+				this.form.caloriesBurned = String(cal)
+			} else {
+				this.form.caloriesBurned = ''
+			}
 		},
 		addFoodEntry() {
 			this.form.foodEntries.push({
@@ -268,6 +288,9 @@ export default {
 					healthData.exercise = parseInt(this.form.exercise)
 					if (this.exerciseIndex > 0) {
 						healthData.exercise_type = this.exerciseTypes[this.exerciseIndex]
+					}
+					if (this.form.caloriesBurned) {
+						healthData.calories_burned = parseInt(this.form.caloriesBurned)
 					}
 				}
 				promises.push(
@@ -603,5 +626,17 @@ export default {
 
 .safe-bottom {
 	height: 40rpx;
+}
+
+.cal-display {
+	flex: 1;
+	display: flex;
+	align-items: center;
+	gap: 8rpx;
+}
+.cal-unit {
+	font-size: 26rpx;
+	color: #999;
+	width: 60rpx;
 }
 </style>

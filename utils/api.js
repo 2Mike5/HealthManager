@@ -9,6 +9,19 @@ import { generateMockData } from '@/utils/mock'
 const API_BASE = 'http://localhost:5001/api'
 const REQUEST_TIMEOUT = 5000
 
+// 各运动类型每分钟预估消耗（千卡）
+const CALORIES_PER_MIN = {
+	'跑步': 10, '骑行': 7, '瑜伽': 3, '游泳': 8,
+	'力量训练': 6, '篮球': 8, '足球': 9, '羽毛球': 5.5,
+	'乒乓球': 4, '跳绳': 12, '快走': 4, '散步': 3.5,
+	'其他': 5
+}
+
+export function calcExerciseCalories(type, minutes) {
+	const rate = CALORIES_PER_MIN[type] || 5
+	return Math.round(rate * (parseFloat(minutes) || 0))
+}
+
 // snake_case → camelCase 字段映射
 const SNAKE_TO_CAMEL = {
 	heart_rate: 'heartRate',
