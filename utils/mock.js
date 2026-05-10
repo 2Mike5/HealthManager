@@ -66,6 +66,7 @@ function generateDailyData(date) {
 		sleep,
 		water,
 		exercise,
+		exerciseType: null,
 		mood,
 		healthScore
 	}

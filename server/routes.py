@@ -2,17 +2,13 @@ import random
 from datetime import datetime, timedelta
 from flask import Blueprint, request, jsonify
 from models import get_db
+from auth import require_auth, success, error
 
 api = Blueprint('api', __name__, url_prefix='/api')
-
-def success(data=None, message='ok'):
-    return jsonify({'code': 200, 'data': data, 'message': message})
-
-def error(code, message):
-    return jsonify({'code': code, 'data': None, 'message': message}), code
 # ──────────────────────────── CRUD ────────────────────────────
 
 @api.route('/records', methods=['GET'])
+@require_auth
 def list_records():
     start = request.args.get('start_date')
     end = request.args.get('end_date')
@@ -34,6 +30,7 @@ def list_records():
     return success([dict(r) for r in rows])
 
 @api.route('/records/<int:rid>', methods=['GET'])
+@require_auth
 def get_record(rid):
     db = get_db()
     row = db.execute("SELECT * FROM health_records WHERE id = ?", (rid,)).fetchone()
@@ -43,6 +40,7 @@ def get_record(rid):
     return success(dict(row))
 
 @api.route('/records', methods=['POST'])
+@require_auth
 def create_record():
     data = request.get_json(silent=True)
     if not data or not data.get('date'):
@@ -52,12 +50,29 @@ def create_record():
         "SELECT id FROM health_records WHERE date = ?", (data['date'],)
     ).fetchone()
     if existing:
+        # 已有记录 → 更新
+        allowed = {
+            'steps', 'heart_rate', 'hr_min', 'hr_avg', 'hr_max',
+            'sleep', 'water', 'exercise', 'exercise_type', 'mood', 'health_score'
+        }
+        updates = {k: v for k, v in data.items() if k in allowed}
+        if updates:
+            updates['updated_at'] = datetime.now().isoformat()
+            cols = ', '.join(f"{k} = ?" for k in updates)
+            db.execute(
+                f"UPDATE health_records SET {cols} WHERE id = ?",
+                list(updates.values()) + [existing['id']]
+            )
+            db.commit()
+        row = db.execute(
+            "SELECT * FROM health_records WHERE id = ?", (existing['id'],)
+        ).fetchone()
         db.close()
-        return error(409, f"日期 {data['date']} 的记录已存在")
+        return success(dict(row), '更新成功')
 
     fields = [
         'date', 'steps', 'heart_rate', 'hr_min', 'hr_avg', 'hr_max',
-        'sleep', 'water', 'exercise', 'mood', 'health_score'
+        'sleep', 'water', 'exercise', 'exercise_type', 'mood', 'health_score'
     ]
     values = {k: data.get(k) for k in fields}
     now = datetime.now().isoformat()
@@ -78,6 +93,7 @@ def create_record():
     return success(dict(row), '创建成功'), 201
 
 @api.route('/records/<int:rid>', methods=['PUT'])
+@require_auth
 def update_record(rid):
     data = request.get_json(silent=True)
     if not data:
@@ -90,7 +106,7 @@ def update_record(rid):
 
     allowed = {
         'steps', 'heart_rate', 'hr_min', 'hr_avg', 'hr_max',
-        'sleep', 'water', 'exercise', 'mood', 'health_score', 'date'
+        'sleep', 'water', 'exercise', 'exercise_type', 'mood', 'health_score', 'date'
     }
     updates = {k: v for k, v in data.items() if k in allowed}
     if not updates:
@@ -109,6 +125,7 @@ def update_record(rid):
     return success(dict(row), '更新成功')
 
 @api.route('/records/<int:rid>', methods=['DELETE'])
+@require_auth
 def delete_record(rid):
     db = get_db()
     row = db.execute("SELECT * FROM health_records WHERE id = ?", (rid,)).fetchone()
@@ -123,6 +140,7 @@ def delete_record(rid):
 # ──────────────────────────── Mock ────────────────────────────
 
 @api.route('/mock/generate', methods=['POST'])
+@require_auth
 def generate_mock():
     data = request.get_json(silent=True) or {}
     days = min(int(data.get('days', 30)), 365)
@@ -185,6 +203,7 @@ def ai_query():
     question = data.get('question', '').strip()
     if not question:
         return error(400, '问题不能为空')
+    messages = data.get('messages', [])
     from ai_service import process_question
-    result = process_question(question)
+    result = process_question(question, messages)
     return success(result)

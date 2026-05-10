@@ -1,11 +1,19 @@
 <script>
 	export default {
 		onLaunch: function() {
-			console.warn('当前组件仅支持 uni_modules 目录结构 ，请升级 HBuilderX 到 3.1.0 版本以上！')
 			console.log('App Launch')
 		},
 		onShow: function() {
 			console.log('App Show')
+			// 认证守卫：检查 token
+			const token = uni.getStorageSync('token')
+			if (!token) {
+				const pages = getCurrentPages()
+				const currentPage = pages.length > 0 ? pages[pages.length - 1].route : ''
+				if (currentPage !== 'pages/login/index' && currentPage !== 'pages/register/index') {
+					uni.reLaunch({ url: '/pages/login/index' })
+				}
+			}
 		},
 		onHide: function() {
 			console.log('App Hide')

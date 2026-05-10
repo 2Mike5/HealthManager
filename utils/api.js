@@ -16,11 +16,17 @@ const SNAKE_TO_CAMEL = {
 	hr_avg: 'hrAvg',
 	hr_max: 'hrMax',
 	health_score: 'healthScore',
+	exercise_type: 'exerciseType',
 	created_at: 'createdAt',
 	updated_at: 'updatedAt'
 }
 
 const WEEKDAYS = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
+
+function getAuthHeader() {
+	const token = uni.getStorageSync('token')
+	return token ? { 'Authorization': 'Bearer ' + token } : {}
+}
 
 /**
  * 将单条 API 记录(snake_case)转为前端 camelCase 格式
@@ -30,7 +36,6 @@ function mapRecord(record) {
 	for (const [key, value] of Object.entries(record)) {
 		result[SNAKE_TO_CAMEL[key] || key] = value
 	}
-	// 补充 dayLabel
 	if (result.date) {
 		const d = new Date(result.date)
 		result.dayLabel = WEEKDAYS[d.getDay()]
@@ -43,14 +48,25 @@ function mapRecord(record) {
  */
 function request(endpoint, options = {}) {
 	return new Promise((resolve, reject) => {
+		const header = {
+			...getAuthHeader(),
+			'Content-Type': 'application/json',
+			...(options.header || {})
+		}
 		uni.request({
 			url: API_BASE + endpoint,
 			timeout: REQUEST_TIMEOUT,
 			dataType: 'json',
+			header,
 			...options,
 			success: (res) => {
 				if (res.data && res.data.code === 200) {
 					resolve(res.data.data)
+				} else if (res.data && res.data.code === 401) {
+					uni.removeStorageSync('token')
+					uni.removeStorageSync('userInfo')
+					uni.reLaunch({ url: '/pages/login/index' })
+					reject(new Error(res.data.message || '未登录'))
 				} else {
 					reject(new Error((res.data && res.data.message) || '请求失败'))
 				}
@@ -63,7 +79,34 @@ function request(endpoint, options = {}) {
 	})
 }
 
-// ───────────── 公开 API 方法 ─────────────
+// ───────────── 认证相关 ─────────────
+
+export function login(username, password) {
+	return request('/auth/login', {
+		method: 'POST',
+		data: { username, password }
+	})
+}
+
+export function register(username, password, nickname) {
+	return request('/auth/register', {
+		method: 'POST',
+		data: { username, password, nickname }
+	})
+}
+
+export function getProfile() {
+	return request('/auth/profile')
+}
+
+export function updateProfile(data) {
+	return request('/auth/profile', {
+		method: 'PUT',
+		data
+	})
+}
+
+// ───────────── 健康记录 ─────────────
 
 /**
  * 获取记录列表
@@ -83,16 +126,10 @@ export function fetchRecords(startDate, endDate) {
 	})
 }
 
-/**
- * 获取单条记录
- */
 export function fetchRecordById(id) {
 	return request('/records/' + id).then(mapRecord)
 }
 
-/**
- * 新增记录
- */
 export function createRecord(data) {
 	return request('/records', {
 		method: 'POST',
@@ -100,9 +137,6 @@ export function createRecord(data) {
 	})
 }
 
-/**
- * 更新记录
- */
 export function updateRecord(id, data) {
 	return request('/records/' + id, {
 		method: 'PUT',
@@ -110,23 +144,90 @@ export function updateRecord(id, data) {
 	})
 }
 
-/**
- * 删除记录
- */
 export function deleteRecord(id) {
 	return request('/records/' + id, {
 		method: 'DELETE'
 	})
 }
 
-/**
- * 生成模拟数据（调用后端接口）
- */
 export function generateMockOnServer(days = 30) {
 	return request('/mock/generate', {
 		method: 'POST',
 		data: { days }
 	})
+}
+
+// ───────────── 体重记录 ─────────────
+
+export function createWeightRecord(data) {
+	return request('/weight', {
+		method: 'POST',
+		data
+	})
+}
+
+export function fetchWeightRecords(startDate, endDate) {
+	let url = '/weight'
+	const params = []
+	if (startDate) params.push('start_date=' + startDate)
+	if (endDate) params.push('end_date=' + endDate)
+	if (params.length) url += '?' + params.join('&')
+	return request(url)
+}
+
+export function getLatestWeight() {
+	return request('/weight/latest')
+}
+
+export function deleteWeightRecord(id) {
+	return request('/weight/' + id, { method: 'DELETE' })
+}
+
+// ───────────── 饮食记录 ─────────────
+
+export function createDietRecord(data) {
+	return request('/diet/records', {
+		method: 'POST',
+		data
+	})
+}
+
+export function fetchDietRecords(params) {
+	let url = '/diet/records'
+	const qs = []
+	if (params) {
+		if (params.date) qs.push('date=' + params.date)
+		if (params.startDate) qs.push('start_date=' + params.startDate)
+		if (params.endDate) qs.push('end_date=' + params.endDate)
+		if (params.mealType) qs.push('meal_type=' + params.mealType)
+	}
+	if (qs.length) url += '?' + qs.join('&')
+	return request(url)
+}
+
+export function deleteDietRecord(id) {
+	return request('/diet/records/' + id, { method: 'DELETE' })
+}
+
+export function getDietSummary(date) {
+	let url = '/diet/summary'
+	if (date) url += '?date=' + date
+	return request(url)
+}
+
+// ───────────── 食物库 ─────────────
+
+export function searchFoods(keyword, category) {
+	let url = '/foods'
+	const params = []
+	if (keyword) params.push('keyword=' + encodeURIComponent(keyword))
+	if (category) params.push('category=' + encodeURIComponent(category))
+	if (params.length) url += '?' + params.join('&')
+	return request(url)
+}
+
+export function getFoodCategories() {
+	return request('/foods/categories')
 }
 
 // ───────────── 智能加载（推荐给页面使用） ─────────────

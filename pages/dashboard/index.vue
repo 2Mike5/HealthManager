@@ -445,6 +445,9 @@ export default {
 	onLoad() {
 		this.loadData()
 	},
+	onShow() {
+		this.loadData()
+	},
 
 	methods: {
 		async loadData() {

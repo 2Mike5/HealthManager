@@ -9,10 +9,64 @@
 			}
 		},
 		{
+			"path": "pages/record/index",
+			"style": {
+				"navigationBarTitleText": "记一记",
+				"navigationBarBackgroundColor": "#667eea",
+				"navigationBarTextStyle": "white"
+			}
+		},
+		{
 			"path": "pages/ai/index",
 			"style": {
 				"navigationBarTitleText": "AI 助手",
 				"navigationBarBackgroundColor": "#2196F3",
+				"navigationBarTextStyle": "white"
+			}
+		},
+		{
+			"path": "pages/profile/index",
+			"style": {
+				"navigationBarTitleText": "我的",
+				"navigationBarBackgroundColor": "#764ba2",
+				"navigationBarTextStyle": "white"
+			}
+		},
+		{
+			"path": "pages/login/index",
+			"style": {
+				"navigationBarTitleText": "登录",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/register/index",
+			"style": {
+				"navigationBarTitleText": "注册",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/profile/weight",
+			"style": {
+				"navigationBarTitleText": "体重管理",
+				"navigationBarBackgroundColor": "#667eea",
+				"navigationBarTextStyle": "white"
+			}
+		},
+		{
+			"path": "pages/profile/diet",
+			"style": {
+				"navigationBarTitleText": "饮食记录",
+				"navigationBarBackgroundColor": "#667eea",
+				"navigationBarTextStyle": "white"
+			}
+		},
+		{
+			"path": "pages/profile/exercise",
+			"style": {
+				"navigationBarTitleText": "运动历史",
+				"navigationBarBackgroundColor": "#667eea",
 				"navigationBarTextStyle": "white"
 			}
 		}
@@ -28,21 +82,33 @@
 	},
 	"tabBar": {
 		"color": "#999999",
-		"selectedColor": "#4CAF50",
+		"selectedColor": "#667eea",
 		"backgroundColor": "#ffffff",
 		"borderStyle": "black",
 		"list": [
 			{
 				"pagePath": "pages/dashboard/index",
-				"text": "健康看板",
+				"text": "看板",
 				"iconPath": "static/tab/dashboard.png",
 				"selectedIconPath": "static/tab/dashboard_active.png"
 			},
 			{
+				"pagePath": "pages/record/index",
+				"text": "记一记",
+				"iconPath": "static/tab/record.png",
+				"selectedIconPath": "static/tab/record_active.png"
+			},
+			{
 				"pagePath": "pages/ai/index",
-				"text": "AI 助手",
+				"text": "AI助手",
 				"iconPath": "static/tab/ai.png",
 				"selectedIconPath": "static/tab/ai_active.png"
+			},
+			{
+				"pagePath": "pages/profile/index",
+				"text": "我的",
+				"iconPath": "static/tab/profile.png",
+				"selectedIconPath": "static/tab/profile_active.png"
 			}
 		]
 	}

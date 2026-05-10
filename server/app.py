@@ -1,6 +1,10 @@
-from flask import Flask
+from flask import Flask, request
 from models import init_db
 from routes import api
+from auth import auth_bp
+from routes_weight import weight_bp
+from routes_diet import diet_bp, food_bp
+from food_seed_data import seed_food_database
 
 app = Flask(__name__)
 
@@ -16,12 +20,14 @@ def add_cors_headers(response):
 @app.before_request
 def handle_options_request():
     if request.method == 'OPTIONS':
-        # 直接返回一个带有正确 CORS 头的空响应
         response = app.make_default_options_response()
-        # 上面的 after_request 会自动再添加一遍头，最终返回 200 OK
         return response
 
 app.register_blueprint(api)
+app.register_blueprint(auth_bp)
+app.register_blueprint(weight_bp)
+app.register_blueprint(diet_bp)
+app.register_blueprint(food_bp)
 
 @app.route('/')
 def index():
@@ -29,4 +35,5 @@ def index():
 
 if __name__ == '__main__':
     init_db()
+    seed_food_database()
     app.run(host='0.0.0.0', port=5001, threaded=True, debug=True)

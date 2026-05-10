@@ -127,7 +127,13 @@ export default {
 			uni.request({
 				url: API_BASE + '/ai/query',
 				method: 'POST',
-				data: { question },
+				data: {
+					question,
+					messages: this.messages.slice(-10).map(m => ({
+						role: m.role,
+						content: m.content
+					}))
+				},
 				timeout: 20000,
 				success: (res) => {
 					if (res.data && res.data.code === 200) {
@@ -173,13 +179,14 @@ export default {
 	display: flex;
 	flex-direction: column;
 	height: 100vh;
-	padding: 16px;
+	overflow: hidden;
 	box-sizing: border-box;
 	background: #f5f6fa;
 }
 
 .quick-section {
-	margin-bottom: 16px;
+	flex-shrink: 0;
+	padding: 16px 16px 0;
 }
 
 .section-title {
@@ -212,8 +219,9 @@ export default {
 
 .chat-box {
 	flex: 1;
-	margin-bottom: 12px;
-	padding: 0 4px;
+	overflow-y: auto;
+	-webkit-overflow-scrolling: touch;
+	padding: 16px;
 }
 
 .message-row {
@@ -317,12 +325,15 @@ export default {
 }
 
 .input-bar {
+	flex-shrink: 0;
 	display: flex;
 	flex-direction: row;
 	align-items: center;
 	gap: 8px;
-	padding: 8px 0;
+	padding: 8px 16px;
+	padding-bottom: calc(8px + env(safe-area-inset-bottom));
 	background: #f5f6fa;
+	border-top: 1px solid #eee;
 }
 
 .input-field {
