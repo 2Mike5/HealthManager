@@ -13,6 +13,10 @@ function randFloat(min, max, decimals = 1) {
 	return Math.round(val * Math.pow(10, decimals)) / Math.pow(10, decimals)
 }
 
+function randChoice(arr) {
+	return arr[Math.floor(Math.random() * arr.length)]
+}
+
 function formatDate(date) {
 	const y = date.getFullYear()
 	const m = String(date.getMonth() + 1).padStart(2, '0')
@@ -66,7 +70,7 @@ function generateDailyData(date) {
 		sleep,
 		water,
 		exercise,
-		exerciseType: null,
+		exerciseType: exercise > 0 ? randChoice(['跑步','骑行','瑜伽','游泳','力量训练','篮球','足球','羽毛球','乒乓球','跳绳','快走','散步']) : null,
 		mood,
 		healthScore
 	}

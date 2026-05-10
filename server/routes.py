@@ -167,6 +167,7 @@ def generate_mock():
         sleep = round(random.uniform(5.0, 9.5), 1)
         water = random.randint(3, 10)
         exercise = random.randint(0, 90)
+        exercise_type = random.choice(['跑步','骑行','瑜伽','游泳','力量训练','篮球','足球','羽毛球','乒乓球','跳绳','快走','散步']) if exercise > 0 else None
         mood = random.randint(40, 100)
 
         step_score = min(steps / 15000 * 100, 100)
@@ -183,11 +184,11 @@ def generate_mock():
         db.execute("""
             INSERT INTO health_records
                 (date, steps, heart_rate, hr_min, hr_avg, hr_max,
-                 sleep, water, exercise, mood, health_score,
+                 sleep, water, exercise, exercise_type, mood, health_score,
                  created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (date_str, steps, heart_rate, hr_min, hr_avg, hr_max,
-              sleep, water, exercise, mood, health_score, now, now))
+              sleep, water, exercise, exercise_type, mood, health_score, now, now))
         created += 1
 
     db.commit()
