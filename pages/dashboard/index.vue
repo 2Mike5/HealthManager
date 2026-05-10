@@ -448,6 +448,13 @@ export default {
 	onShow() {
 		this.loadData()
 	},
+	onPullDownRefresh() {
+		this.loadData().then(() => {
+			uni.stopPullDownRefresh()
+		}).catch(() => {
+			uni.stopPullDownRefresh()
+		})
+	},
 
 	methods: {
 		async loadData() {

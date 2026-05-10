@@ -52,6 +52,12 @@
 				<text class="menu-text">个人资料</text>
 				<text class="menu-arrow">&#8250;</text>
 			</view>
+			<view class="menu-divider"></view>
+			<view class="menu-item">
+				<text class="menu-icon menu-icon-dark">&#9790;</text>
+				<text class="menu-text">暗黑模式</text>
+				<switch :checked="isDarkMode" @change="toggleDarkMode" style="transform:scale(0.8)" />
+			</view>
 		</view>
 
 		<!-- 退出登录 -->
@@ -71,7 +77,8 @@ export default {
 			showProfileEdit: false,
 			editNickname: '',
 			editHeight: '',
-			editTargetWeight: ''
+			editTargetWeight: '',
+			isDarkMode: uni.getStorageSync('darkMode') === true,
 		}
 	},
 	computed: {
@@ -140,6 +147,15 @@ export default {
 			}).catch(() => {
 				uni.showToast({ title: '保存失败', icon: 'none' })
 			})
+		},
+		toggleDarkMode(e) {
+			this.isDarkMode = e.detail.value
+			uni.setStorageSync('darkMode', this.isDarkMode)
+			if (this.isDarkMode) {
+				document.documentElement.setAttribute('data-theme', 'dark')
+			} else {
+				document.documentElement.removeAttribute('data-theme')
+			}
 		},
 		handleLogout() {
 			uni.showModal({
@@ -253,6 +269,7 @@ export default {
 .menu-icon-diet { color: #FF6B6B; }
 .menu-icon-exercise { color: #FFA94D; }
 .menu-icon-profile { color: #45B7D1; }
+.menu-icon-dark { color: #7C4DFF; }
 
 .menu-text {
 	flex: 1;

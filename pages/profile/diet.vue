@@ -69,7 +69,7 @@
 					<picker class="meal-picker" :value="mealIndex" :range="mealOptions" @change="onMealChange">
 						<text class="picker-text">{{ mealOptions[mealIndex] }}</text>
 					</picker>
-					<input class="add-input food-input" v-model="foodName" placeholder="食物名称" placeholder-class="ph" />
+					<input class="add-input food-input" v-model="foodName" @input="onFoodSearch" placeholder="食物名称" placeholder-class="ph" />
 				</view>
 				<view class="form-row">
 					<input class="add-input" v-model="foodAmount" type="digit" placeholder="份量(g)" placeholder-class="ph" />
@@ -81,6 +81,12 @@
 					<input class="add-input" v-model="foodCarbs" type="digit" placeholder="碳水(g)" placeholder-class="ph" />
 				</view>
 				<button class="add-food-btn" @tap="addFood">添加</button>
+			</view>
+			<view v-if="foodSuggestions.length > 0" class="food-suggestions">
+				<view v-for="food in foodSuggestions" :key="food.id" class="food-suggestion-item" @tap="selectFood(food)">
+					<text class="suggestion-name">{{ food.name }}</text>
+					<text class="suggestion-cal">{{ food.calories_per_100g }} kcal/100g</text>
+				</view>
 			</view>
 		</view>
 	</view>
@@ -117,7 +123,9 @@ export default {
 			foodCal: '',
 			foodProtein: '',
 			foodFat: '',
-			foodCarbs: ''
+			foodCarbs: '',
+			foodSuggestions: [],
+			searchTimer: null
 		}
 	},
 	computed: {
@@ -178,6 +186,28 @@ export default {
 		},
 		onMealChange(e) {
 			this.mealIndex = e.detail.value
+		},
+		onFoodSearch() {
+			clearTimeout(this.searchTimer)
+			this.searchTimer = setTimeout(() => {
+				const keyword = this.foodName.trim()
+				if (keyword.length < 1) {
+					this.foodSuggestions = []
+					return
+				}
+				searchFoods(keyword).then(foods => {
+					this.foodSuggestions = foods || []
+				}).catch(() => {})
+			}, 300)
+		},
+		selectFood(food) {
+			this.foodName = food.name
+			this.foodAmount = '100'
+			this.foodCal = String(food.calories_per_100g || 0)
+			this.foodProtein = String(food.protein_per_100g || 0)
+			this.foodFat = String(food.fat_per_100g || 0)
+			this.foodCarbs = String(food.carbs_per_100g || 0)
+			this.foodSuggestions = []
 		},
 		addFood() {
 			if (!this.foodName.trim()) {
@@ -420,4 +450,22 @@ export default {
 	line-height: 72rpx;
 	margin-top: 8rpx;
 }
+
+.food-suggestions {
+	background: #fff;
+	border-radius: 12px;
+	box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+	max-height: 300rpx;
+	overflow-y: auto;
+	margin-top: 8px;
+}
+.food-suggestion-item {
+	display: flex;
+	justify-content: space-between;
+	padding: 16rpx 20rpx;
+	border-bottom: 1px solid #f5f5f5;
+}
+.food-suggestion-item:active { background: #f5f7fa; }
+.suggestion-name { font-size: 26rpx; color: #333; }
+.suggestion-cal { font-size: 24rpx; color: #999; }
 </style>
