@@ -1,7 +1,8 @@
 import sqlite3
+import os
 from datetime import datetime
 
-DB_PATH = 'health_records.db'
+DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'health_records.db')
 
 
 def get_db():

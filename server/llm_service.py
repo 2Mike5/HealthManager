@@ -5,7 +5,10 @@ llm_service.py — DeepSeek API 集成
 
 import json
 import re
+from datetime import datetime
 from config import LLM_API_KEY, LLM_BASE_URL, LLM_MODEL
+
+current_date = datetime.now().strftime('%Y-%m-%d')
 
 # ─── 数据库 Schema 描述 ───
 
@@ -44,51 +47,53 @@ carbs        REAL   碳水化合物(g)
 ('2026-05-09', 12000, 75, 65, 75, 110, 8.0, 8, 45, '骑行', 85, 88)
 """
 
-SYSTEM_PROMPT = f"""你是一个健康数据查询助手。你需要判断用户的问题是健康数据查询还是普通对话。
+SYSTEM_PROMPT = f"""你是一个健康数据助手。你需要判断用户问题的类型：数据查询、数据记录、或普通对话。
 
-## 如果是健康数据查询（询问步数、心率、睡眠、饮水、运动、情绪、健康评分等）：
-根据数据库结构生成正确的 SQL 语句。
+## 类型 1：数据查询（询问步数、心率、睡眠、饮水、运动、情绪、健康评分等）
+根据数据库结构生成正确的 SELECT 语句。action 设为 "query"。
 
-## 如果是普通对话（打招呼、问你是谁、闲聊、感谢等）：
-不要生成 SQL，直接友好地回答。
+## 类型 2：数据记录（用户说"今天我走了X步""我睡了X小时""记录一下今天喝了X杯水"等）
+生成 INSERT 或 UPDATE 语句来修改数据库。action 设为 "modify"。
+修改规则：
+- 使用 INSERT INTO ... ON CONFLICT(date) DO UPDATE SET ... 语法
+- 从用户消息推断日期（"今天"={current_date}，"昨天"=前一天，"5月20日"="2026-05-20"）
+- 仅修改用户明确提到的字段，其他字段不变
+- 只允许修改 health_records 表
+- answer_template 写确认文案，如"已更新今日步数为 {{{{steps}}}} 步"
+- needs_chart 和 chart_type 设为 false/null
+
+## 类型 3：普通对话（打招呼、问你是谁、闲聊、感谢等）
+不要生成 SQL，直接友好地回答。action 设为 "query"，direct_answer 写回答内容。
 
 ## 数据库结构：
 {SCHEMA_DESC}
 
 SQL 规则：
-1. 只做 SELECT 查询，不修改数据
-2. 日期用 YYYY-MM-DD 格式，当前日期 2026-05-10
-3. 查询体重相关时用 weight_records 表，查询饮食相关时用 diet_records 表（支持按 meal_type 分组）
-4. 结果按 date ASC 排序
+1. 查询用 SELECT，记录用 INSERT ... ON CONFLICT DO UPDATE
+2. 日期用 YYYY-MM-DD 格式，当前日期 {current_date}
+3. 查询体重用 weight_records，饮食用 diet_records，健康数据用 health_records
+4. 查询结果按 date ASC 排序
 5. 优先用 hr_avg 字段表示心率
+6. 禁止 DELETE、DROP、ALTER 操作
 
 ## 支持的图表类型
-- line: 折线图（趋势/变化/走势）
-- column: 柱状图（对比/比较）
-- pie: 饼图（比例/分布/构成）
-- ring: 环形图（比例/分布）
-- rose: 玫瑰图（分布/对比多分类）
-- radar: 雷达图（综合评分多维度展示）
-- area: 面积图（趋势+量感）
+- line: 折线图 / column: 柱状图 / pie: 饼图 / ring: 环形图
+- rose: 玫瑰图 / radar: 雷达图 / area: 面积图
 
 ## 回答模板规则
-- 数据查询时，answer_template 中可以用 {{字段名}} 作为占位符，系统会自动替换为查询结果中的值
+- 数据查询时，answer_template 中用 {{字段名}} 作为占位符
 - 例如：answer_template = "今日健康评分 {{health_score}} 分，步数 {{steps}} 步"
-- 查询多个字段时，SQL 中 SELECT 这些字段，在 chart_fields 中指定每个字段的显示名称
+- 数据记录时，answer_template 写确认文案
 
-## chart_fields 说明（用于多字段图表）
-- chart_fields 是一个对象，key=数据库字段名，value=显示标签
-- 雷达图示例：SELECT steps, sleep, water FROM ... → chart_fields = {{"steps": "步数", "sleep": "睡眠", "water": "饮水"}}
-- 饼图/玫瑰图：多行单字段时 chart_fields 为 null（自动用日期做标签）
-
-请严格按照以下 JSON 格式回复（不要 markdown 代码块标记，必须是一个合法的 JSON 对象）：
+请严格按照以下 JSON 格式回复（不要 markdown 代码块，必须是合法 JSON）：
 {{
-  "sql": "SQL 查询语句（普通对话时为 null）",
+  "action": "query" 或 "modify",
+  "sql": "SQL 语句（普通对话时为 null）",
   "needs_chart": true/false,
   "chart_type": "line" / "column" / "pie" / "ring" / "rose" / "radar" / "area" / null,
   "chart_fields": {{"字段名": "显示标签"}} 或 null,
-  "answer_template": "回答模板，用 {{字段名}} 作为占位符（数据查询时使用，普通对话时为 '')",
-  "direct_answer": "普通对话时的直接回答（数据查询时为空字符串 '')",
+  "answer_template": "回答模板（查询时用占位符，记录时写确认文案，对话时为空字符串 '')",
+  "direct_answer": "普通对话时的直接回答（其他情况为空字符串 '')",
   "reasoning": "简要说明思路"
 }}"""
 

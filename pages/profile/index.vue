@@ -53,6 +53,12 @@
 				<text class="menu-arrow">&#8250;</text>
 			</view>
 			<view class="menu-divider"></view>
+			<view class="menu-item" @tap="showGoalsModal">
+				<text class="menu-icon menu-icon-goals">🎯</text>
+				<text class="menu-text">健康目标</text>
+				<text class="menu-arrow">›</text>
+			</view>
+			<view class="menu-divider"></view>
 			<view class="menu-item">
 				<text class="menu-icon menu-icon-dark">&#9790;</text>
 				<text class="menu-text">暗黑模式</text>
@@ -80,6 +86,7 @@ export default {
 			editHeight: '',
 			editTargetWeight: '',
 			isDarkMode: uni.getStorageSync('darkMode') === true,
+			goals: uni.getStorageSync("healthGoals") || { steps: 10000, sleep: 8, water: 8 },
 		}
 	},
 	computed: {
@@ -160,13 +167,41 @@ export default {
 		toggleDarkMode(e) {
 			this.isDarkMode = e.detail.value
 			uni.setStorageSync('darkMode', this.isDarkMode)
+			const bg = this.isDarkMode ? '#1a1a2e' : '#F1F5F9'
+			const fc = this.isDarkMode ? '#ffffff' : '#000000'
+			uni.setNavigationBarColor({ frontColor: fc, backgroundColor: bg })
+			uni.$emit('darkModeChanged', this.isDarkMode)
+			// #ifdef H5
 			if (this.isDarkMode) {
 				document.documentElement.setAttribute('data-theme', 'dark')
 			} else {
 				document.documentElement.removeAttribute('data-theme')
 			}
+			// #endif
 		},
-		handleLogout() {
+		showGoalsModal() {
+			const g = this.goals
+			uni.showModal({
+				title: "健康目标设置",
+				editable: true,
+				placeholderText: "步数目标,睡眠目标(h),饮水目标(杯)",
+				content: g.steps + "," + g.sleep + "," + g.water,
+				success: (res) => {
+					if (res.confirm && res.content) {
+						const parts = res.content.split(",")
+						const newGoals = {
+							steps: parseInt(parts[0]) || g.steps,
+							sleep: parseFloat(parts[1]) || g.sleep,
+							water: parseInt(parts[2]) || g.water,
+						}
+						this.goals = newGoals
+						uni.setStorageSync("healthGoals", newGoals)
+						uni.showToast({ title: "目标已保存", icon: "success" })
+					}
+				}
+			})
+		},
+						handleLogout() {
 			uni.showModal({
 				title: '提示',
 				content: '确定要退出登录吗？',
@@ -187,14 +222,14 @@ export default {
 .profile-page {
 	padding: 24rpx;
 	min-height: 100vh;
+	background: #F1F5F9;
 }
 
 .glass-card {
-	background: rgba(255,255,255,0.75);
-	backdrop-filter: blur(20px);
-	border-radius: 20px;
-	border: 1px solid rgba(255,255,255,0.6);
-	box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+	background: #FFFFFF;
+	border-radius: 24rpx;
+	border: 1px solid rgba(0,0,0,0.04);
+	box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03);
 	padding: 32rpx;
 	margin-bottom: 24rpx;
 }
@@ -209,7 +244,7 @@ export default {
 	width: 100rpx;
 	height: 100rpx;
 	border-radius: 50%;
-	background: linear-gradient(135deg, #667eea, #764ba2);
+	background: linear-gradient(135deg, #4F46E5, #818CF8);
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -248,7 +283,7 @@ export default {
 .stat-num {
 	font-size: 32rpx;
 	font-weight: bold;
-	color: #667eea;
+	color: #4F46E5;
 }
 
 .stat-label {

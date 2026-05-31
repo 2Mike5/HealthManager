@@ -261,3 +261,12 @@ export function loadHealthData() {
 			return { source: 'mock', data }
 		})
 }
+// ───────────── AI 健康洞察 ─────────────
+
+export function fetchAIInsight(metrics) {
+	return request('/ai/insight', {
+		method: 'POST',
+		data: { metrics },
+		timeout: 15000
+	})
+}

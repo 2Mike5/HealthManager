@@ -109,7 +109,7 @@ export default {
 <style lang="scss">
 .register-page {
 	min-height: 100vh;
-	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+	background: linear-gradient(145deg, #4F46E5 0%, #3730A3 100%);
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -185,7 +185,7 @@ export default {
 .register-btn {
 	width: 100%;
 	height: 84rpx;
-	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+	background: linear-gradient(145deg, #4F46E5 0%, #3730A3 100%);
 	border-radius: 42rpx;
 	color: #fff;
 	font-size: 32rpx;
@@ -213,7 +213,7 @@ export default {
 }
 
 .link-text {
-	color: #667eea;
+	color: #4F46E5;
 	font-weight: 500;
 }
 </style>

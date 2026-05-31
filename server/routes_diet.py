@@ -142,8 +142,12 @@ def list_foods():
     query = "SELECT * FROM food_database WHERE 1=1"
     params = []
     if keyword:
-        query += " AND name LIKE ?"
-        params.append(f'%{keyword}%')
+        # 中文模糊搜索：将关键词拆成单个字符，每个字符独立的 LIKE 条件
+        # 例如搜索"鸡肉"可同时匹配"鸡肉"和"鸡胸肉"
+        for ch in keyword:
+            if ch.strip():
+                query += " AND name LIKE ?"
+                params.append(f'%{ch}%')
     if category:
         query += " AND category = ?"
         params.append(category)

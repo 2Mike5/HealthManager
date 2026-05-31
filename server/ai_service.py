@@ -216,6 +216,17 @@ def process_question(question, messages=None):
         chart_type = llm_result.get('chart_type')
         chart_fields = llm_result.get('chart_fields')  # {field: label}
         answer_template = llm_result.get('answer_template', '')
+        action = llm_result.get("action", "query")
+
+        if action == "modify" and sql:
+            try:
+                db = get_db()
+                db.execute(sql)
+                db.commit()
+                db.close()
+                return {"type": "text", "answer": answer_template or "数据已更新", "sql": sql, "chart_config": None}
+            except Exception as e:
+                return {"type": "error", "answer": f"数据更新失败：{e}", "chart_config": None, "sql": sql}
     else:
         start, end, time_label = _parse_time_range(text)
         fields = _extract_metrics(text)

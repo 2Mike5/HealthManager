@@ -4,7 +4,7 @@
       "path": "pages/dashboard/index",
       "style": {
         "navigationBarTitleText": "健康看板",
-        "navigationBarBackgroundColor": "#4CAF50",
+        "navigationBarBackgroundColor": "#6B73FF",
         "navigationBarTextStyle": "white",
         "enablePullDownRefresh": true
       }
@@ -13,7 +13,7 @@
       "path": "pages/record/index",
       "style": {
         "navigationBarTitleText": "记一记",
-        "navigationBarBackgroundColor": "#667eea",
+        "navigationBarBackgroundColor": "#4F46E5",
         "navigationBarTextStyle": "white"
       }
     },
@@ -21,7 +21,7 @@
       "path": "pages/ai/index",
       "style": {
         "navigationBarTitleText": "AI 助手",
-        "navigationBarBackgroundColor": "#2196F3",
+        "navigationBarBackgroundColor": "#4F46E5",
         "navigationBarTextStyle": "white"
       }
     },
@@ -29,7 +29,7 @@
       "path": "pages/profile/index",
       "style": {
         "navigationBarTitleText": "我的",
-        "navigationBarBackgroundColor": "#764ba2",
+        "navigationBarBackgroundColor": "#4F46E5",
         "navigationBarTextStyle": "white"
       }
     },
@@ -51,7 +51,7 @@
       "path": "pages/profile/weight",
       "style": {
         "navigationBarTitleText": "体重管理",
-        "navigationBarBackgroundColor": "#667eea",
+        "navigationBarBackgroundColor": "#4F46E5",
         "navigationBarTextStyle": "white"
       }
     },
@@ -59,7 +59,7 @@
       "path": "pages/profile/diet",
       "style": {
         "navigationBarTitleText": "饮食记录",
-        "navigationBarBackgroundColor": "#667eea",
+        "navigationBarBackgroundColor": "#4F46E5",
         "navigationBarTextStyle": "white"
       }
     },
@@ -67,24 +67,38 @@
       "path": "pages/profile/exercise",
       "style": {
         "navigationBarTitleText": "运动历史",
-        "navigationBarBackgroundColor": "#667eea",
+        "navigationBarBackgroundColor": "#4F46E5",
         "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/detail/index",
+      "style": {
+        "navigationBarTitleText": "",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/score-detail/index",
+      "style": {
+        "navigationBarTitleText": "",
+        "navigationStyle": "custom"
       }
     }
   ],
   "globalStyle": {
     "navigationBarTextStyle": "black",
-    "navigationBarTitleText": "uni-app",
-    "navigationBarBackgroundColor": "#F8F8F8",
-    "backgroundColor": "#F8F8F8",
+    "navigationBarTitleText": "健康管理",
+    "navigationBarBackgroundColor": "#F1F5F9",
+    "backgroundColor": "#F1F5F9",
     "app-plus": {
-      "background": "#efeff4"
+      "background": "#F1F5F9"
     }
   },
   "tabBar": {
-    "color": "#999999",
-    "selectedColor": "#667eea",
-    "backgroundColor": "#ffffff",
+    "color": "#94A3B8",
+    "selectedColor": "#4F46E5",
+    "backgroundColor": "#FFFFFF",
     "borderStyle": "black",
     "list": [
       {

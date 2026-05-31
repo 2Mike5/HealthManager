@@ -327,6 +327,7 @@ export default {
 			try {
 				await Promise.all(promises)
 				uni.showToast({ title: '保存成功!', icon: 'success' })
+				uni.$emit('recordUpdated')
 				this.form = this.getDefaultForm()
 				this.exerciseIndex = 0
 			} catch (e) {
@@ -361,7 +362,7 @@ export default {
 	width: 64rpx;
 	height: 64rpx;
 	border: 4rpx solid #eee;
-	border-top-color: #667eea;
+	border-top-color: #4F46E5;
 	border-radius: 50%;
 	animation: spin 0.8s linear infinite;
 }
@@ -372,7 +373,7 @@ export default {
 
 .loading-text {
 	font-size: 26rpx;
-	color: #667eea;
+	color: #4F46E5;
 	margin-top: 20rpx;
 }
 
@@ -392,7 +393,7 @@ export default {
 
 .date-nav {
 	font-size: 48rpx;
-	color: #667eea;
+	color: #4F46E5;
 	padding: 8rpx 16rpx;
 }
 
@@ -413,9 +414,8 @@ export default {
 
 /* 卡片 */
 .glass-card {
-	background: rgba(255,255,255,0.75);
-	backdrop-filter: blur(20px);
-	border-radius: 20px;
+	background: #FFFFFF;
+	border-radius: 24rpx;
 	padding: 32rpx;
 	margin-bottom: 24rpx;
 	box-shadow: 0 8px 32px rgba(0,0,0,0.08);
@@ -436,7 +436,7 @@ export default {
 
 .section-add {
 	font-size: 26rpx;
-	color: #667eea;
+	color: #4F46E5;
 	padding: 8rpx 16rpx;
 }
 
@@ -479,7 +479,7 @@ export default {
 
 .slider-val {
 	font-size: 28rpx;
-	color: #667eea;
+	color: #4F46E5;
 	font-weight: 600;
 	width: 80rpx;
 	text-align: right;
@@ -509,7 +509,7 @@ export default {
 .stepper-val {
 	font-size: 32rpx;
 	font-weight: 600;
-	color: #667eea;
+	color: #4F46E5;
 	min-width: 60rpx;
 	text-align: center;
 }
@@ -548,7 +548,7 @@ export default {
 }
 
 .bmi-value {
-	color: #667eea;
+	color: #4F46E5;
 	font-weight: 600;
 }
 
@@ -600,7 +600,7 @@ export default {
 
 .total-text {
 	font-size: 26rpx;
-	color: #667eea;
+	color: #4F46E5;
 	font-weight: 600;
 }
 
@@ -608,7 +608,7 @@ export default {
 .submit-btn {
 	width: 100%;
 	height: 88rpx;
-	background: linear-gradient(135deg, #667eea, #764ba2);
+	background: linear-gradient(145deg, #4F46E5, #3730A3);
 	border-radius: 44rpx;
 	color: #fff;
 	font-size: 32rpx;

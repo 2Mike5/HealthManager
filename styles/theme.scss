@@ -1,0 +1,121 @@
+/**
+ * Health Tracker — Design System
+ * Health Tech Modern · Inspired by Apple Health / Oura
+ * Tailwind-compatible token naming for cross-platform use
+ */
+
+// ═══════════════════════════════════════════
+//  Brand Colors
+// ═══════════════════════════════════════════
+$color-primary:       #4F46E5;   // Indigo 600 — 主色
+$color-primary-light: #818CF8;   // Indigo 400 — 浅主色
+$color-primary-dark:  #3730A3;   // Indigo 800 — 深主色
+$color-primary-bg:    #EEF2FF;   // Indigo 50  — 主色背景
+
+$color-secondary:     #10B981;   // Emerald 500 — 辅色（健康绿）
+$color-secondary-bg:  #ECFDF5;   // Emerald 50
+
+$color-success:       #22C55E;   // Green 500
+$color-warning:       #F59E0B;   // Amber 500
+$color-error:         #EF4444;   // Red 500
+$color-info:          #3B82F6;   // Blue 500
+
+// ═══════════════════════════════════════════
+//  Background Colors
+// ═══════════════════════════════════════════
+$bg-page:             #F8FAFC;   // Slate 50  — 页面背景
+$bg-card:             #FFFFFF;   // 卡片背景
+$bg-card-secondary:   #F1F5F9;   // Slate 100 — 次级卡片
+$bg-dark-card:        #0F172A;   // Slate 900 — 深色卡片（评分卡）
+$bg-dark-card2:       #1E293B;   // Slate 800 — 深色卡片渐变
+
+// ═══════════════════════════════════════════
+//  Text Colors
+// ═══════════════════════════════════════════
+$text-primary:        #1E293B;   // Slate 800 — 一级文字
+$text-secondary:      #64748B;   // Slate 500 — 二级文字
+$text-tertiary:       #94A3B8;   // Slate 400 — 辅助文字
+$text-inverse:        #FFFFFF;   // 深色背景文字
+$text-link:           $color-primary;
+
+// ═══════════════════════════════════════════
+//  Border Radius
+// ═══════════════════════════════════════════
+$radius-sm:           8rpx;     // 小圆角 — 标签、徽章
+$radius-md:           12rpx;    // 中圆角 — 按钮、输入框
+$radius-lg:           20rpx;    // 大圆角 — 卡片
+$radius-xl:           28rpx;    // 超大圆角 — Hero 卡片
+$radius-full:         9999rpx;  // 全圆角 — 药丸、头像
+
+// ═══════════════════════════════════════════
+//  Shadows — Light & Subtle
+// ═══════════════════════════════════════════
+$shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+$shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+$shadow-md: 0 4px 6px rgba(0, 0, 0, 0.04), 0 2px 4px rgba(0, 0, 0, 0.03);
+$shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.06), 0 4px 10px rgba(0, 0, 0, 0.03);
+$shadow-card: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 0, 0, 0.03);
+
+// ═══════════════════════════════════════════
+//  Spacing Scale (rpx)
+// ═══════════════════════════════════════════
+$space-1:  4rpx;
+$space-2:  8rpx;
+$space-3:  12rpx;
+$space-4:  16rpx;
+$space-5:  20rpx;
+$space-6:  24rpx;
+$space-8:  32rpx;
+$space-10: 40rpx;
+$space-12: 48rpx;
+$space-16: 64rpx;
+$space-20: 80rpx;
+
+// ═══════════════════════════════════════════
+//  Typography (rpx)
+// ═══════════════════════════════════════════
+$text-xs:   20rpx;   // 辅助文字、标签
+$text-sm:   24rpx;   // 次要文字、描述
+$text-base: 28rpx;   // 正文
+$text-lg:   32rpx;   // 小标题
+$text-xl:   36rpx;   // 标题
+$text-2xl:  44rpx;   // 大标题
+$text-3xl:  56rpx;   // Hero 数字
+$text-4xl:  72rpx;   // 超大数字
+
+$font-weight-normal: 400;
+$font-weight-medium: 500;
+$font-weight-semibold: 600;
+$font-weight-bold: 700;
+
+// ═══════════════════════════════════════════
+//  Chart Palette
+// ═══════════════════════════════════════════
+$chart-steps:      #4F46E5;   // 步数
+$chart-heart:      #EF4444;   // 心率
+$chart-sleep:      #8B5CF6;   // 睡眠
+$chart-water:      #3B82F6;   // 饮水
+$chart-exercise:   #F59E0B;   // 运动
+$chart-mood:       #EC4899;   // 情绪
+$chart-score:      #10B981;   // 评分
+
+// ═══════════════════════════════════════════
+//  Sleep Heatmap Colors
+// ═══════════════════════════════════════════
+$sleep-excellent:  rgba(139, 92, 246, 0.55);  // >= 8h
+$sleep-good:       rgba(139, 92, 246, 0.35);  // >= 7h
+$sleep-fair:       rgba(245, 158, 11, 0.35);  // >= 6h
+$sleep-poor:       rgba(239, 68, 68, 0.35);   // >= 5h
+$sleep-bad:        rgba(239, 68, 68, 0.55);   // < 5h
+
+// ═══════════════════════════════════════════
+//  Dimension Score Colors
+// ═══════════════════════════════════════════
+$dim-colors: (
+  'steps':    #4F46E5,
+  'heart':    #EF4444,
+  'sleep':    #8B5CF6,
+  'water':    #3B82F6,
+  'exercise': #F59E0B,
+  'mood':     #EC4899,
+);
