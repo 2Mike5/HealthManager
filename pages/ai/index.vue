@@ -87,12 +87,13 @@
 </template>
 
 <script>
-const API_BASE = 'http://localhost:5001/api'
+const API_BASE = 'http://192.168.20.41:5001/api'
 
 export default {
 	data() {
 		return {
 			inputText: '',
+			isRecording: false,
 			isRecording: false,
 			loading: false,
 			scrollTo: '',
@@ -122,24 +123,64 @@ export default {
 			this.addMessage('user', text)
 			this.askAI(text)
 		},
-		startVoice() {
-			// #ifdef APP-PLUS
-			if (this.isRecording) {
-				plus.speech.stopRecognize()
-				this.isRecording = false
+		handleVoiceText(text) {
+			const finalText = (text || '').trim()
+			if (!finalText) {
+				uni.showToast({ title: '未识别到内容', icon: 'none' })
 				return
 			}
-			this.isRecording = true
+			if (this.loading) {
+				this.inputText = finalText
+				uni.showToast({ title: '已填入输入框，当前回答完成后可发送', icon: 'none' })
+				return
+			}
+			this.inputText = ''
+			this.addMessage('user', finalText)
+			this.askAI(finalText)
+		},
+		startVoice() {
+			// #ifdef APP-PLUS
+			if (this.isRecording) return
+			const main = plus.android.runtimeMainActivity()
+			const Intent = plus.android.importClass('android.content.Intent')
+			const RecognizerIntent = plus.android.importClass('android.speech.RecognizerIntent')
 			const that = this
-			plus.speech.startRecognize({
-				engine: 'iFly'
-			}, function(text) {
-				that.inputText = text
+			const previousOnActivityResult = main.onActivityResult
+			main.onActivityResult = function(requestCode, resultCode, data) {
+				if (requestCode !== 1001) {
+					if (typeof previousOnActivityResult === 'function') {
+						previousOnActivityResult(requestCode, resultCode, data)
+					}
+					return
+				}
+				main.onActivityResult = previousOnActivityResult
 				that.isRecording = false
-			}, function(err) {
-				that.isRecording = false
-				uni.showToast({ title: '语音识别失败', icon: 'none' })
-			})
+				if (resultCode !== -1 || !data) {
+					uni.showToast({ title: '已取消语音输入', icon: 'none' })
+					return
+				}
+				try {
+					plus.android.importClass(data)
+					const results = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
+					if (results) {
+						plus.android.importClass(results)
+					}
+					let text = ''
+					if (results && results.size && results.size() > 0) {
+						text = String(results.get(0) || '')
+					}
+					that.handleVoiceText(text)
+				} catch (e) {
+					uni.showToast({ title: '语音结果解析失败', icon: 'none' })
+				}
+			}
+			const intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
+			intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+			intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, 'zh-CN')
+			intent.putExtra(RecognizerIntent.EXTRA_PROMPT, '说出内容...')
+			intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1)
+			this.isRecording = true
+			main.startActivityForResult(intent, 1001)
 			// #endif
 			// #ifdef H5
 			const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
@@ -157,22 +198,23 @@ export default {
 			recognition.interimResults = false
 			this.recognition = recognition
 			this.isRecording = true
-			const that = this
+			const that2 = this
 			recognition.onresult = function(e) {
-				that.inputText = e.results[0][0].transcript
-				that.isRecording = false
+				const text = e.results[0][0].transcript
+				that2.isRecording = false
+				that2.handleVoiceText(text)
 			}
 			recognition.onerror = function(e) {
-				that.isRecording = false
+				that2.isRecording = false
 				uni.showToast({ title: '语音识别失败', icon: 'none' })
 			}
 			recognition.onend = function() {
-				that.isRecording = false
+				that2.isRecording = false
 			}
 			recognition.start()
 			// #endif
 		},
-		addMessage(role, content, extras = {}) {
+				addMessage(role, content, extras = {}) {
 			this.messages.push({ role, content, ...extras })
 			this.scrollToBottom()
 		},
@@ -181,6 +223,10 @@ export default {
 			uni.request({
 				url: API_BASE + '/ai/query',
 				method: 'POST',
+				header: {
+					Authorization: 'Bearer ' + (uni.getStorageSync('token') || ''),
+					'Content-Type': 'application/json'
+				},
 				header: {
 					Authorization: 'Bearer ' + (uni.getStorageSync('token') || ''),
 					'Content-Type': 'application/json'
