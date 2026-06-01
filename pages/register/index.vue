@@ -136,7 +136,7 @@ export default {
 
 .register-card {
 	width: 85%;
-	background: rgba(255, 255, 255, 0.95);
+	background: var(--card-bg-glass);
 	border-radius: 24px;
 	padding: 40rpx;
 	backdrop-filter: blur(20px);
@@ -149,18 +149,18 @@ export default {
 
 .form-label {
 	font-size: 26rpx;
-	color: #333;
+	color: var(--text-1);
 	margin-bottom: 10rpx;
 	display: block;
 }
 
 .form-input {
 	height: 80rpx;
-	background: #f5f7fa;
+	background: var(--input-bg);
 	border-radius: 14rpx;
 	padding: 0 24rpx;
 	font-size: 28rpx;
-	color: #333;
+	color: var(--text-1);
 }
 
 .placeholder {
@@ -209,7 +209,7 @@ export default {
 	text-align: center;
 	margin-top: 28rpx;
 	font-size: 26rpx;
-	color: #666;
+	color: var(--text-2);
 }
 
 .link-text {

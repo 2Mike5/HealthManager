@@ -13,14 +13,10 @@
 			</view>
 			<view class="dh-stats">
 				<view class="dhs-item">
-					<text class="dhs-val">{{ fmtNum(currentVal) }}</text>
+					<text class="dhs-val">{{ fmtNum(avgVal) }}</text>
 					<text class="dhs-unit">{{ metricUnit }}</text>
 				</view>
 				<view class="dhs-row">
-					<view class="dhs-mini">
-						<text class="dhs-mini-label">平均值</text>
-						<text class="dhs-mini-val">{{ fmtNum(avgVal) }} {{ metricUnit }}</text>
-					</view>
 					<view class="dhs-mini">
 						<text class="dhs-mini-label">最高</text>
 						<text class="dhs-mini-val">{{ fmtNum(maxVal) }} {{ metricUnit }}</text>
@@ -28,6 +24,10 @@
 					<view class="dhs-mini">
 						<text class="dhs-mini-label">最低</text>
 						<text class="dhs-mini-val">{{ fmtNum(minVal) }} {{ metricUnit }}</text>
+					</view>
+					<view class="dhs-mini">
+						<text class="dhs-mini-label">记录天数</text>
+						<text class="dhs-mini-val">{{ dataCount }} 天</text>
 					</view>
 				</view>
 			</view>
@@ -160,6 +160,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { onLoad } from '@dcloudio/uni-app'
 import { fetchRecords } from '@/utils/api'
 
 // ── 页面参数 ──
@@ -438,13 +439,13 @@ const goBack = () => {
 }
 
 // ── 数据加载 ──
-onMounted(() => {
-	// 获取页面参数
-	const pages = getCurrentPages()
-	const currentPage = pages[pages.length - 1]
-	if (currentPage && currentPage.options && currentPage.options.type) {
-		metricType.value = currentPage.options.type
+onLoad((options) => {
+	if (options && options.type) {
+		metricType.value = options.type
 	}
+})
+
+onMounted(() => {
 	loadData()
 })
 
@@ -465,16 +466,11 @@ async function loadData() {
 </script>
 
 <style scoped lang="scss">
-$white: #FFFFFF;
-$text-1: #1A1A2E;
-$text-2: #555;
-$text-3: #999;
-$bg: #F5F7FA;
-
 .detail-page {
-	background: $bg;
+	background: var(--page-bg);
 	min-height: 100vh;
 	padding-bottom: 40rpx;
+	transition: background 0.3s;
 }
 
 // ── Hero ──
@@ -484,35 +480,36 @@ $bg: #F5F7FA;
 }
 .dh-back {
 	width: 56rpx; height: 56rpx; border-radius: 50%;
-	background: rgba(255,255,255,0.6);
+	background: var(--card-bg-glass);
 	display: flex; align-items: center; justify-content: center;
 	margin-bottom: 16rpx;
 }
-.dh-back-icon { font-size: 40rpx; color: $text-1; font-weight: 300; }
+.dh-back-icon { font-size: 40rpx; color: var(--text-1); font-weight: 300; }
 .dh-info { text-align: center; margin-bottom: 20rpx; }
 .dh-icon { font-size: 56rpx; display: block; }
-.dh-title { font-size: 40rpx; font-weight: 800; color: $text-1; display: block; margin-top: 8rpx; }
-.dh-sub { font-size: 24rpx; color: $text-2; display: block; margin-top: 4rpx; }
+.dh-title { font-size: 40rpx; font-weight: 800; color: var(--text-1); display: block; margin-top: 8rpx; }
+.dh-sub { font-size: 24rpx; color: var(--text-2); display: block; margin-top: 4rpx; }
 .dh-stats { text-align: center; }
 .dhs-item { display: flex; flex-direction: row; align-items: baseline; justify-content: center; gap: 8rpx; }
-.dhs-val { font-size: 80rpx; font-weight: 900; color: $text-1; line-height: 1; }
-.dhs-unit { font-size: 28rpx; color: $text-3; }
+.dhs-val { font-size: 80rpx; font-weight: 900; color: var(--text-1); line-height: 1; }
+.dhs-unit { font-size: 28rpx; color: var(--text-3); }
 .dhs-row { display: flex; flex-direction: row; justify-content: center; gap: 48rpx; margin-top: 16rpx; }
 .dhs-mini { text-align: center; }
-.dhs-mini-label { font-size: 20rpx; color: $text-3; display: block; }
-.dhs-mini-val { font-size: 26rpx; color: $text-1; font-weight: 600; display: block; margin-top: 4rpx; }
+.dhs-mini-label { font-size: 20rpx; color: var(--text-3); display: block; }
+.dhs-mini-val { font-size: 26rpx; color: var(--text-1); font-weight: 600; display: block; margin-top: 4rpx; }
 
 // ── 范围切换 ──
 .range-bar {
 	display: flex; flex-direction: row; justify-content: center;
 	margin: 0 28rpx 20rpx;
-	background: $white; border-radius: 24rpx;
-	padding: 6rpx; box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+	background: var(--card-bg); border-radius: 24rpx;
+	padding: 6rpx; box-shadow: var(--shadow-card);
+	transition: background 0.3s;
 }
 .range-tab {
 	flex: 1; text-align: center;
 	padding: 14rpx 0; border-radius: 20rpx;
-	font-size: 26rpx; color: $text-3; font-weight: 500;
+	font-size: 26rpx; color: var(--text-3); font-weight: 500;
 	transition: all 0.2s;
 }
 .range-tab.active { background: #3B82F6; color: #fff; font-weight: 600; }
@@ -521,79 +518,84 @@ $bg: #F5F7FA;
 .hr-mode-bar {
 	display: flex; flex-direction: row; justify-content: center;
 	margin: 0 28rpx 16rpx;
-	background: $white; border-radius: 24rpx;
-	padding: 6rpx; box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+	background: var(--card-bg); border-radius: 24rpx;
+	padding: 6rpx; box-shadow: var(--shadow-card);
+	transition: background 0.3s;
 }
 .hr-mode-tab {
 	flex: 1; text-align: center;
 	padding: 10rpx 0; border-radius: 20rpx;
-	font-size: 24rpx; color: $text-3; font-weight: 500;
+	font-size: 24rpx; color: var(--text-3); font-weight: 500;
 	transition: all 0.2s;
 }
 .hr-mode-tab.active { background: #3B82F6; color: #fff; font-weight: 600; }
 
 // ── 图表卡片 ──
 .chart-card {
-	background: $white; margin: 0 24rpx 20rpx;
+	background: var(--card-bg); margin: 0 24rpx 20rpx;
 	border-radius: 24rpx; padding: 20rpx 16rpx;
-	box-shadow: 0 4px 24px rgba(0,0,0,0.04);
+	box-shadow: var(--shadow-card);
+	transition: background 0.3s;
 }
 .chart-empty { display: flex; align-items: center; justify-content: center; height: 400rpx; }
-.chart-empty-text { font-size: 28rpx; color: $text-3; }
+.chart-empty-text { font-size: 28rpx; color: var(--text-3); }
 
 // ── 统计卡片 ──
 .stats-card {
-	background: $white; margin: 0 24rpx 20rpx;
+	background: var(--card-bg); margin: 0 24rpx 20rpx;
 	border-radius: 24rpx; padding: 24rpx 28rpx;
-	box-shadow: 0 4px 24px rgba(0,0,0,0.04);
+	box-shadow: var(--shadow-card);
+	transition: background 0.3s;
 }
-.stats-title { font-size: 28rpx; font-weight: 700; color: $text-1; display: block; margin-bottom: 16rpx; }
+.stats-title { font-size: 28rpx; font-weight: 700; color: var(--text-1); display: block; margin-bottom: 16rpx; }
 .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 16rpx; }
 .stats-item { text-align: center; }
-.stats-val { font-size: 40rpx; font-weight: 800; color: $text-1; display: block; line-height: 1; }
-.stats-label { font-size: 20rpx; color: $text-3; display: block; margin-top: 6rpx; }
+.stats-val { font-size: 40rpx; font-weight: 800; color: var(--text-1); display: block; line-height: 1; }
+.stats-label { font-size: 20rpx; color: var(--text-3); display: block; margin-top: 6rpx; }
 
 // ── 记录列表 ──
 .records-card {
-	background: $white; margin: 0 24rpx;
+	background: var(--card-bg); margin: 0 24rpx;
 	border-radius: 24rpx; padding: 24rpx 28rpx;
-	box-shadow: 0 4px 24px rgba(0,0,0,0.04);
+	box-shadow: var(--shadow-card);
+	transition: background 0.3s;
 }
-.records-title { font-size: 28rpx; font-weight: 700; color: $text-1; display: block; margin-bottom: 14rpx; }
+.records-title { font-size: 28rpx; font-weight: 700; color: var(--text-1); display: block; margin-bottom: 14rpx; }
 .record-row {
 	display: flex; flex-direction: row;
 	justify-content: space-between; align-items: center;
-	padding: 14rpx 0; border-bottom: 1px solid #F5F5F5;
+	padding: 14rpx 0; border-bottom: 1px solid var(--divider);
 }
-.rec-date { font-size: 26rpx; color: $text-2; }
-.rec-val { font-size: 26rpx; color: $text-1; font-weight: 600; }
+.rec-date { font-size: 26rpx; color: var(--text-2); }
+.rec-val { font-size: 26rpx; color: var(--text-1); font-weight: 600; }
 .rec-vals { display: flex; flex-direction: row; gap: 16rpx; }
-.rec-hi { font-size: 24rpx; color: $text-1; font-weight: 600; }
-.rec-lo { font-size: 24rpx; color: $text-1; font-weight: 600; }
-.record-empty { text-align: center; padding: 40rpx 0; font-size: 26rpx; color: $text-3; }
+.rec-hi { font-size: 24rpx; color: var(--text-1); font-weight: 600; }
+.rec-lo { font-size: 24rpx; color: var(--text-1); font-weight: 600; }
+.record-empty { text-align: center; padding: 40rpx 0; font-size: 26rpx; color: var(--text-3); }
 
 // ── 睡眠热力图 ──
 .heatmap-card {
-	background: $white; margin: 0 24rpx 20rpx;
+	background: var(--card-bg); margin: 0 24rpx 20rpx;
 	border-radius: 24rpx; padding: 24rpx 20rpx;
-	box-shadow: 0 4px 24px rgba(0,0,0,0.04);
+	box-shadow: var(--shadow-card);
+	transition: background 0.3s;
 }
 .heatmap-header {
 	display: flex; flex-direction: row;
 	justify-content: space-between; align-items: center;
 	margin-bottom: 16rpx;
 }
-.heatmap-title { font-size: 28rpx; font-weight: 700; color: $text-1; }
+.heatmap-title { font-size: 28rpx; font-weight: 700; color: var(--text-1); }
 .heatmap-month-nav { display: flex; flex-direction: row; align-items: center; gap: 12rpx; }
 .hm-nav {
 	font-size: 26rpx; color: #7C3AED;
 	padding: 4rpx 12rpx; background: rgba(124,58,237,0.08);
 	border-radius: 8rpx;
 }
-.hm-month { font-size: 26rpx; font-weight: 600; color: $text-2; min-width: 130rpx; text-align: center; }
+.hm-month { font-size: 26rpx; font-weight: 600; color: var(--text-2); min-width: 130rpx; text-align: center; }
 
 .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5rpx; }
-.cal-hd { text-align: center; font-size: 22rpx; color: $text-3; padding: 8rpx 0; font-weight: 500; }
+.cal-hd { text-align: center; font-size: 22rpx; color: var(--text-3); padding: 8rpx 0; font-weight: 500; }
 .cal-cell {
 	position: relative; aspect-ratio: 1;
 	display: flex; align-items: center; justify-content: center;
@@ -601,14 +603,14 @@ $bg: #F5F7FA;
 }
 .cal-empty { visibility: hidden; }
 .cal-bg { position: absolute; inset: 0; border-radius: 10rpx; }
-.cal-num { font-size: 22rpx; color: $text-1; font-weight: 500; z-index: 1; }
+.cal-num { font-size: 22rpx; color: var(--text-1); font-weight: 500; z-index: 1; }
 
 .cal-legend {
 	display: flex; flex-direction: row;
 	align-items: center; justify-content: center;
 	gap: 8rpx; margin-top: 18rpx;
 }
-.cal-legend-label { font-size: 20rpx; color: $text-3; }
+.cal-legend-label { font-size: 20rpx; color: var(--text-3); }
 .cal-legend-bar { width: 34rpx; height: 12rpx; border-radius: 3rpx; }
 
 .bottom-spacer { height: 40rpx; }

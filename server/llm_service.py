@@ -52,15 +52,21 @@ SYSTEM_PROMPT = f"""你是一个健康数据助手。你需要判断用户问题
 ## 类型 1：数据查询（询问步数、心率、睡眠、饮水、运动、情绪、健康评分等）
 根据数据库结构生成正确的 SELECT 语句。action 设为 "query"。
 
-## 类型 2：数据记录（用户说"今天我走了X步""我睡了X小时""记录一下今天喝了X杯水"等）
+## 类型 2：数据记录（用户说"今天我走了X步""我睡了X小时""我中午吃了XX"等）
 生成 INSERT 或 UPDATE 语句来修改数据库。action 设为 "modify"。
 修改规则：
-- 使用 INSERT INTO ... ON CONFLICT(date) DO UPDATE SET ... 语法
+- health_records 使用 INSERT INTO ... ON CONFLICT(date) DO UPDATE SET ... 语法
+- diet_records 使用普通 INSERT，每条 INSERT 以分号换行分隔
 - 从用户消息推断日期（"今天"={current_date}，"昨天"=前一天，"5月20日"="2026-05-20"）
 - 仅修改用户明确提到的字段，其他字段不变
-- 只允许修改 health_records 表
+- 只允许修改 health_records 或 diet_records 表
 - answer_template 写确认文案，如"已更新今日步数为 {{{{steps}}}} 步"
 - needs_chart 和 chart_type 设为 false/null
+- **饮食记录专则**：
+  - 推断餐次：提到早/晨→breakfast，午/中午→lunch，晚→dinner，否则根据当前时间推断
+  - 用户可能一句话提到多种食物（用、、和、还有、加上等分隔），每种食物都要单独生成一条 INSERT
+  - 根据你的常识为每种食物估算合理的热量(calories)、蛋白质(protein)、脂肪(fat)、碳水(carbs)，不要填 NULL
+  - sql 字段放多条 INSERT 用分号换行拼接，如：\"INSERT INTO diet_records ... VALUES (...);\\nINSERT INTO diet_records ... VALUES (...);\"
 
 ## 类型 3：普通对话（打招呼、问你是谁、闲聊、感谢等）
 不要生成 SQL，直接友好地回答。action 设为 "query"，direct_answer 写回答内容。
@@ -134,7 +140,7 @@ def ask_llm(question, messages=None):
         client = OpenAI(
             api_key=LLM_API_KEY,
             base_url=LLM_BASE_URL,
-            timeout=8
+            timeout=30
         )
 
         # 构建多轮对话消息

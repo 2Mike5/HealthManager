@@ -250,14 +250,13 @@ onMounted(async () => {
 </script>
 
 <style scoped lang="scss">
-$white: #fff; $text-1: #1A1A2E; $text-2: #555; $text-3: #999; $bg: #F5F7FA;
 $primary: #6B73FF; $green: #10B981; $amber: #F59E0B; $red: #EF4444;
 
-.page { background: $bg; min-height: 100vh; }
+.page { background: var(--page-bg); min-height: 100vh; transition: background 0.3s; }
 
 // Hero
 .hero {
-	background: linear-gradient(135deg, #6B73FF 0%, #3B27FE 100%);
+	background: linear-gradient(135deg, var(--hero-bg-start), var(--hero-bg-end));
 	padding: 24rpx 32rpx 40rpx;
 }
 .hero-back { width: 56rpx; height: 56rpx; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; margin-bottom: 16rpx; font-size: 40rpx; color: #fff; }
@@ -269,29 +268,29 @@ $primary: #6B73FF; $green: #10B981; $amber: #F59E0B; $red: #EF4444;
 .hero-trend { font-size: 26rpx; font-weight: 600; color: $green; background: rgba(16,185,129,0.2); padding: 6rpx 16rpx; border-radius: 999rpx; }
 
 // Range
-.range-bar { display: flex; flex-direction: row; margin: 0 28rpx 20rpx; background: $white; border-radius: 24rpx; padding: 6rpx; box-shadow: 0 2px 12px rgba(0,0,0,0.04); }
-.range-tab { flex: 1; text-align: center; padding: 14rpx 0; border-radius: 20rpx; font-size: 26rpx; color: $text-3; font-weight: 500; }
+.range-bar { display: flex; flex-direction: row; margin: 0 28rpx 20rpx; background: var(--card-bg); border-radius: 24rpx; padding: 6rpx; box-shadow: var(--shadow-card); transition: background 0.3s; }
+.range-tab { flex: 1; text-align: center; padding: 14rpx 0; border-radius: 20rpx; font-size: 26rpx; color: var(--text-3); font-weight: 500; }
 .range-tab.active { background: $primary; color: #fff; font-weight: 600; }
 
 // Chart card
-.chart-card { background: $white; margin: 0 24rpx 20rpx; border-radius: 24rpx; padding: 24rpx 16rpx; box-shadow: 0 4px 24px rgba(0,0,0,0.04); }
-.chart-title { font-size: 28rpx; font-weight: 700; color: $text-1; display: block; margin-bottom: 12rpx; padding: 0 8rpx; }
+.chart-card { background: var(--card-bg); margin: 0 24rpx 20rpx; border-radius: 24rpx; padding: 24rpx 16rpx; box-shadow: var(--shadow-card); transition: background 0.3s; }
+.chart-title { font-size: 28rpx; font-weight: 700; color: var(--text-1); display: block; margin-bottom: 12rpx; padding: 0 8rpx; }
 
 // Heatmap
 .heatmap-header { display: flex; flex-direction: row; justify-content: space-between; align-items: center; margin-bottom: 4rpx; padding: 0 8rpx; }
 .hm-nav-row { display: flex; flex-direction: row; align-items: center; gap: 12rpx; }
 .hm-nav { font-size: 26rpx; color: $primary; padding: 4rpx 12rpx; background: rgba(107,115,255,0.08); border-radius: 8rpx; }
-.hm-month { font-size: 26rpx; font-weight: 600; color: $text-2; min-width: 120rpx; text-align: center; }
+.hm-month { font-size: 26rpx; font-weight: 600; color: var(--text-2); min-width: 120rpx; text-align: center; }
 
 .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5rpx; }
-.cal-hd { text-align: center; font-size: 22rpx; color: $text-3; padding: 8rpx 0; font-weight: 500; }
+.cal-hd { text-align: center; font-size: 22rpx; color: var(--text-3); padding: 8rpx 0; font-weight: 500; }
 .cal-cell { position: relative; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 10rpx; min-height: 70rpx; }
 .cal-empty { visibility: hidden; }
 .cal-bg { position: absolute; inset: 0; border-radius: 10rpx; }
-.cal-num { font-size: 22rpx; color: $text-1; font-weight: 500; z-index: 1; }
+.cal-num { font-size: 22rpx; color: var(--text-1); font-weight: 500; z-index: 1; }
 
 .cal-legend { display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 8rpx; margin-top: 18rpx; }
-.cal-leg-label { font-size: 20rpx; color: $text-3; }
+.cal-leg-label { font-size: 20rpx; color: var(--text-3); }
 .cal-leg-bar { width: 34rpx; height: 12rpx; border-radius: 3rpx; }
 
 .bottom-spacer { height: 40rpx; }

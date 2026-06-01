@@ -7,12 +7,12 @@ from auth import require_auth, success, error
 api = Blueprint('api', __name__, url_prefix='/api')
 
 def _calc_score(rec):
-    steps = rec.get('steps') or 0
+    steps = max(0, rec.get('steps') or 0)
     hr_avg = rec.get('hr_avg') or rec.get('heart_rate') or 70
-    sleep = rec.get('sleep') or 0
-    water = rec.get('water') or 0
-    exercise = rec.get('exercise') or 0
-    mood = rec.get('mood') or 70
+    sleep = max(0, rec.get('sleep') or 0)
+    water = max(0, rec.get('water') or 0)
+    exercise = max(0, rec.get('exercise') or 0)
+    mood = max(0, min(100, rec.get('mood') or 70))
     step_score = min(steps / 10000 * 100, 100)
     hr_score = max(0, min(100, 100 - abs(hr_avg - 70) * 2.5))
     sleep_score = min(sleep / 8 * 100, 100)
@@ -253,6 +253,19 @@ def ai_query():
     if not question:
         return error(400, '问题不能为空')
     messages = data.get('messages', [])
+    # 尝试从 Authorization header 提取 user_id（不强制要求登录）
+    user_id = None
+    auth_header = request.headers.get('Authorization', '')
+    if auth_header.startswith('Bearer '):
+        try:
+            from auth import SECRET_KEY
+            import jwt as pyjwt
+            token = auth_header[7:]
+            payload = pyjwt.decode(token, SECRET_KEY, algorithms=['HS256'])
+            user_id = payload.get('user_id')
+        except Exception as e:
+            print(f'[AI Query] token decode failed: {e}')
+    print(f'[AI Query] question={question[:40]}, user_id={user_id}')
     from ai_service import process_question
-    result = process_question(question, messages)
+    result = process_question(question, messages, user_id)
     return success(result)

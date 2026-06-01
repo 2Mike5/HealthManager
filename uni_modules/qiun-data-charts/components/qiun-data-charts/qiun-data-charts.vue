@@ -1174,9 +1174,9 @@ export default {
 
 <!-- #ifdef APP-VUE || H5 -->
 <script module="rdcharts" lang="renderjs">
-import uChartsRD from '@/components/u-charts/u-charts.js';
-import cfu from '@/components/u-charts/config-ucharts.js';
-import cfe from '@/components/u-charts/config-echarts.js';
+import uChartsRD from '../../../../components/u-charts/u-charts.js';
+import cfu from '../../../../components/u-charts/config-ucharts.js';
+import cfe from '../../../../components/u-charts/config-echarts.js';
 
 var that = {};
 var rootdom = null;

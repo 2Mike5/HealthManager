@@ -15,6 +15,37 @@
 			<view class="date-nav" @tap="nextDay">&#8250;</view>
 		</view>
 
+		<!-- 快捷模板 -->
+		<view class="quick-templates">
+			<text class="qt-title">💬 快捷记录</text>
+			<view class="qt-grid">
+				<view class="qt-btn" @tap="applyTemplate('steps')">
+					<text class="qt-icon">🚶</text>
+					<text class="qt-text">走了 8000 步</text>
+				</view>
+				<view class="qt-btn" @tap="applyTemplate('sleep')">
+					<text class="qt-icon">💤</text>
+					<text class="qt-text">睡了 7.5 小时</text>
+				</view>
+				<view class="qt-btn" @tap="applyTemplate('water')">
+					<text class="qt-icon">💧</text>
+					<text class="qt-text">喝了 8 杯水</text>
+				</view>
+				<view class="qt-btn" @tap="applyTemplate('run')">
+					<text class="qt-icon">🏃</text>
+					<text class="qt-text">跑步 30 分钟</text>
+				</view>
+				<view class="qt-btn" @tap="applyTemplate('mood')">
+					<text class="qt-icon">😊</text>
+					<text class="qt-text">心情 80 分</text>
+				</view>
+				<view class="qt-btn" @tap="copyYesterday">
+					<text class="qt-icon">📋</text>
+					<text class="qt-text">复制昨天记录</text>
+				</view>
+			</view>
+		</view>
+
 		<!-- Section 1: 基础指标 -->
 		<view class="section-card glass-card">
 			<view class="section-header">
@@ -126,7 +157,13 @@
 				</view>
 				<view class="field-row">
 					<text class="field-label">食物</text>
-					<input class="field-input" v-model="entry.foodName" placeholder="食物名称" placeholder-class="ph" />
+					<input class="field-input" v-model="entry.foodName" @input="(e) => onFoodSearch(i, e)" placeholder="搜索食物名称" placeholder-class="ph" />
+				</view>
+				<view v-if="activeFoodEntryIndex === i && foodSuggestions.length > 0" class="food-suggestions">
+					<view v-for="food in foodSuggestions" :key="food.id" class="food-suggestion-item" @tap="selectFood(i, food)">
+						<text class="sug-name">{{ food.name }}</text>
+						<text class="sug-cal">{{ food.calories_per_100g }} kcal/100g</text>
+					</view>
 				</view>
 				<view class="field-row">
 					<text class="field-label">份量(g)</text>
@@ -158,7 +195,7 @@
 </template>
 
 <script>
-import { createRecord, createWeightRecord, createDietRecord, getProfile, calcExerciseCalories } from '@/utils/api'
+import { createRecord, createWeightRecord, createDietRecord, getProfile, calcExerciseCalories, fetchRecords, searchFoods } from '@/utils/api'
 
 export default {
 	data() {
@@ -171,7 +208,10 @@ export default {
 			form: this.getDefaultForm(),
 			exerciseTypes: ['未选择', '跑步', '骑行', '瑜伽', '游泳', '力量训练', '篮球', '足球', '羽毛球', '乒乓球', '跳绳', '快走', '其他'],
 			exerciseIndex: 0,
-			mealOptions: ['早餐', '午餐', '晚餐', '加餐']
+			mealOptions: ['早餐', '午餐', '晚餐', '加餐'],
+			foodSuggestions: [],
+			activeFoodEntryIndex: -1,
+			searchTimer: null
 		}
 	},
 	computed: {
@@ -267,6 +307,71 @@ export default {
 		onFoodMealChange(i, e) {
 			this.form.foodEntries[i].mealIndex = e.detail.value
 		},
+		onFoodSearch(i, e) {
+			this.activeFoodEntryIndex = i
+			clearTimeout(this.searchTimer)
+			this.searchTimer = setTimeout(() => {
+				const keyword = e.detail.value.trim()
+				if (keyword.length < 1) {
+					this.foodSuggestions = []
+					return
+				}
+				searchFoods(keyword).then(foods => {
+					this.foodSuggestions = foods || []
+				}).catch(() => {})
+			}, 300)
+		},
+		selectFood(i, food) {
+			const entry = this.form.foodEntries[i]
+			entry.foodName = food.name
+			entry.amount = '100'
+			entry.calories = String(food.calories_per_100g || 0)
+			entry.protein = String(food.protein_per_100g || 0)
+			entry.fat = String(food.fat_per_100g || 0)
+			entry.carbs = String(food.carbs_per_100g || 0)
+			this.foodSuggestions = []
+			this.activeFoodEntryIndex = -1
+		},
+		applyTemplate(type) {
+			const tpl = {
+				steps: { steps: '8000' },
+				sleep: { sleep: '7.5' },
+				water: { water: '8' },
+				run: { exercise: '30', exerciseIndex: 1 },
+				mood: { mood: 4 },
+			}
+			const vals = tpl[type]
+			if (vals) {
+				Object.keys(vals).forEach(k => {
+					if (k === 'exerciseIndex') this.exerciseIndex = vals[k]
+					else if (this.form[k] !== undefined) this.form[k] = vals[k]
+				})
+				uni.showToast({ title: '已填入，请确认后保存', icon: 'none' })
+			}
+		},
+		async copyYesterday() {
+			const d = new Date(this.currentDate)
+			d.setDate(d.getDate() - 1)
+			const dateStr = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0')
+			try {
+				const records = await fetchRecords(dateStr, dateStr)
+				if (records && records.length > 0) {
+					const r = records[0]
+					if (r.steps) this.form.steps = String(r.steps)
+					if (r.hrMin) this.form.hrMin = String(r.hrMin)
+					if (r.hrAvg) this.form.hrAvg = String(r.hrAvg)
+					if (r.hrMax) this.form.hrMax = String(r.hrMax)
+					if (r.sleep) this.form.sleep = String(r.sleep)
+					if (r.water) this.form.water = String(r.water)
+					if (r.exercise) this.form.exercise = String(r.exercise)
+					if (r.exerciseType) { const idx = this.exerciseTypes.indexOf(r.exerciseType); if (idx > 0) this.exerciseIndex = idx }
+					if (r.mood) this.form.mood = Math.min(5, Math.max(1, Math.round((r.mood + 10) / 20)))
+					uni.showToast({ title: '已复制昨天记录', icon: 'success' })
+				} else {
+					uni.showToast({ title: '昨天没有记录', icon: 'none' })
+				}
+			} catch (e) { uni.showToast({ title: '复制失败', icon: 'none' }) }
+		},
 		async handleSubmit() {
 			this.submitting = true
 			const promises = []
@@ -274,7 +379,8 @@ export default {
 			const mealMap = { 0: 'breakfast', 1: 'lunch', 2: 'dinner', 3: 'snack' }
 
 			// 1. 健康记录
-			const hasHealth = this.form.steps || this.form.hrMin || this.form.hrAvg || this.form.hrMax || this.form.exercise
+			const hasHealth = this.form.steps || this.form.hrMin || this.form.hrAvg || this.form.hrMax
+				|| this.form.exercise || this.form.water || this.form.sleep || this.form.mood
 			if (hasHealth) {
 				const healthData = { date }
 				if (this.form.steps) healthData.steps = parseInt(this.form.steps)
@@ -288,9 +394,6 @@ export default {
 					healthData.exercise = parseInt(this.form.exercise)
 					if (this.exerciseIndex > 0) {
 						healthData.exercise_type = this.exerciseTypes[this.exerciseIndex]
-					}
-					if (this.form.caloriesBurned) {
-						healthData.calories_burned = parseInt(this.form.caloriesBurned)
 					}
 				}
 				promises.push(
@@ -345,6 +448,8 @@ export default {
 	padding: 24rpx;
 	min-height: 100vh;
 	padding-bottom: 40rpx;
+	background: var(--page-bg);
+	transition: background 0.3s;
 }
 
 .loading-overlay {
@@ -377,6 +482,14 @@ export default {
 	margin-top: 20rpx;
 }
 
+/* 快捷模板 */
+.quick-templates { margin: 0 24rpx 20rpx; }
+.qt-title { font-size: 26rpx; color: var(--text-3); display: block; margin-bottom: 12rpx; }
+.qt-grid { display: flex; flex-direction: row; flex-wrap: wrap; gap: 12rpx; }
+.qt-btn { background: var(--card-bg); border-radius: 16rpx; padding: 16rpx 20rpx; display: flex; flex-direction: row; align-items: center; gap: 8rpx; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
+.qt-icon { font-size: 28rpx; }
+.qt-text { font-size: 24rpx; color: var(--text-2); font-weight: 500; }
+
 /* 日期导航 */
 .date-section {
 	display: flex;
@@ -385,10 +498,10 @@ export default {
 	gap: 40rpx;
 	padding: 20rpx;
 	margin-bottom: 16rpx;
-	background: rgba(255,255,255,0.75);
+	background: var(--card-bg-glass);
 	backdrop-filter: blur(20px);
 	border-radius: 20px;
-	box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+	box-shadow: var(--shadow-glass);
 }
 
 .date-nav {
@@ -402,23 +515,24 @@ export default {
 .date-text {
 	font-size: 32rpx;
 	font-weight: 600;
-	color: #333;
+	color: var(--text-1);
 }
 
 .date-label {
 	font-size: 22rpx;
-	color: #999;
+	color: var(--text-3);
 	margin-top: 4rpx;
 	display: block;
 }
 
 /* 卡片 */
 .glass-card {
-	background: #FFFFFF;
+	background: var(--card-bg);
 	border-radius: 24rpx;
 	padding: 32rpx;
 	margin-bottom: 24rpx;
-	box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+	box-shadow: var(--shadow-glass);
+	transition: background 0.3s, box-shadow 0.3s;
 }
 
 .section-header {
@@ -431,7 +545,7 @@ export default {
 .section-title {
 	font-size: 30rpx;
 	font-weight: 600;
-	color: #333;
+	color: var(--text-1);
 }
 
 .section-add {
@@ -450,18 +564,18 @@ export default {
 .field-label {
 	width: 180rpx;
 	font-size: 26rpx;
-	color: #555;
+	color: var(--text-2);
 	flex-shrink: 0;
 }
 
 .field-input {
 	flex: 1;
 	height: 72rpx;
-	background: #f5f7fa;
+	background: var(--input-bg);
 	border-radius: 14rpx;
 	padding: 0 20rpx;
 	font-size: 28rpx;
-	color: #333;
+	color: var(--text-1);
 	text-align: right;
 }
 
@@ -535,7 +649,7 @@ export default {
 /* 选择器 */
 .picker-text {
 	font-size: 28rpx;
-	color: #333;
+	color: var(--text-1);
 	padding: 8rpx 0;
 }
 
@@ -554,7 +668,7 @@ export default {
 
 /* 饮食条目 */
 .food-entry {
-	background: #fafbfc;
+	background: var(--food-entry-bg);
 	border-radius: 16rpx;
 	padding: 20rpx;
 	margin-bottom: 16rpx;
@@ -569,7 +683,7 @@ export default {
 
 .food-num {
 	font-size: 24rpx;
-	color: #999;
+	color: var(--text-3);
 }
 
 .food-del {
@@ -577,6 +691,28 @@ export default {
 	color: #e74c3c;
 	padding: 4rpx 12rpx;
 }
+
+.food-suggestions {
+	background: var(--card-bg);
+	border-radius: 12rpx;
+	box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+	max-height: 260rpx;
+	overflow-y: auto;
+	margin-bottom: 16rpx;
+}
+
+.food-suggestion-item {
+	display: flex;
+	justify-content: space-between;
+	padding: 16rpx 20rpx;
+	border-bottom: 1px solid #f5f5f5;
+}
+
+.food-suggestion-item:active { background: #f5f7fa; }
+
+.sug-name { font-size: 26rpx; color: var(--text-1); }
+
+.sug-cal { font-size: 24rpx; color: #999; }
 
 .macro-row {
 	display: flex;
@@ -586,7 +722,7 @@ export default {
 .macro-input {
 	flex: 1;
 	height: 64rpx;
-	background: #f5f7fa;
+	background: var(--input-bg);
 	border-radius: 12rpx;
 	padding: 0 12rpx;
 	font-size: 24rpx;

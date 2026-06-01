@@ -6,7 +6,8 @@
 
 import { generateMockData } from '@/utils/mock'
 
-const API_BASE = 'http://localhost:5001/api'
+// 开发时改成你电脑的局域网 IP，手机和电脑连同一个 WiFi 即可
+const API_BASE = 'http://192.168.20.41:5001/api'
 const REQUEST_TIMEOUT = 5000
 
 // 各运动类型每分钟预估消耗（千卡）

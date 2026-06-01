@@ -123,7 +123,7 @@ export default {
 
 .login-card {
 	width: 85%;
-	background: rgba(255, 255, 255, 0.95);
+	background: var(--card-bg-glass);
 	border-radius: 24px;
 	padding: 48rpx 40rpx;
 	backdrop-filter: blur(20px);
@@ -133,12 +133,12 @@ export default {
 .card-title {
 	font-size: 36rpx;
 	font-weight: bold;
-	color: #1a1a2e;
+	color: var(--text-1);
 }
 
 .card-subtitle {
 	font-size: 26rpx;
-	color: #666;
+	color: var(--text-2);
 	margin-top: 8rpx;
 	margin-bottom: 40rpx;
 	display: block;
@@ -150,18 +150,18 @@ export default {
 
 .form-label {
 	font-size: 26rpx;
-	color: #333;
+	color: var(--text-1);
 	margin-bottom: 12rpx;
 	display: block;
 }
 
 .form-input {
 	height: 88rpx;
-	background: #f5f7fa;
+	background: var(--input-bg);
 	border-radius: 16rpx;
 	padding: 0 24rpx;
 	font-size: 28rpx;
-	color: #333;
+	color: var(--text-1);
 	border: 2rpx solid transparent;
 	transition: border-color 0.3s;
 }
@@ -208,7 +208,7 @@ export default {
 	text-align: center;
 	margin-top: 32rpx;
 	font-size: 26rpx;
-	color: #666;
+	color: var(--text-2);
 }
 
 .link-text {

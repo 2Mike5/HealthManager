@@ -8,6 +8,46 @@ import re
 from datetime import datetime, timedelta
 from models import get_db
 
+# ─── user_id 注入 ───
+def _inject_user_id(sql, user_id):
+    """向 diet_records/weight_records 的 SQL 中注入 user_id，兼容全角/半角字符，支持多条语句"""
+    if user_id is None:
+        return sql
+    # 先把全角符号统一转半角（LLM 输出可能混用）
+    sql = sql.replace('（', '(').replace('）', ')')
+    sql = sql.replace('，', ',').replace('；', ';')
+    uid = str(user_id)
+
+    # 拆分为多条语句分别处理，再拼回
+    statements = re.split(r';(?:\s*\n\s*)?', sql.strip().rstrip(';'))
+    processed = []
+    for stmt in statements:
+        stmt = stmt.strip()
+        if not stmt:
+            continue
+        # INSERT INTO diet_records (cols) VALUES (vals) → 加上 user_id
+        stmt = re.sub(
+            r'(INSERT\s+INTO\s+diet_records\s*)\(([^)]*)\)(\s*VALUES\s*)\(([^)]*)\)',
+            rf'\1(user_id, \2)\3({uid}, \4)',
+            stmt, flags=re.IGNORECASE
+        )
+        # SELECT ... FROM diet_records → 补上 user_id 条件
+        if re.search(r'FROM\s+diet_records', stmt, re.IGNORECASE) and \
+           not re.search(r'user_id', stmt, re.IGNORECASE):
+            stmt = re.sub(
+                r'(FROM\s+diet_records)(\s*WHERE\s*)',
+                rf'\1 WHERE user_id = {uid} AND ',
+                stmt, flags=re.IGNORECASE
+            )
+            if 'user_id' not in stmt:
+                stmt = re.sub(
+                    r'(FROM\s+diet_records\s*)(?=\n|$|ORDER|GROUP|LIMIT|;)',
+                    rf'\1WHERE user_id = {uid} ',
+                    stmt, flags=re.IGNORECASE
+                )
+        processed.append(stmt)
+    return ';\n'.join(processed) + ';'
+
 # ─── 指标映射 ───
 METRICS = {
     '步数': 'steps', 'steps': 'steps', '走路': 'steps', '步行': 'steps',
@@ -193,9 +233,10 @@ def _build_chart_config(chart_type, rows, fields=None, time_label='', metric_lab
     }
 
 
-def process_question(question, messages=None):
+def process_question(question, messages=None, user_id=None):
     """先尝试 LLM，失败则回退规则引擎
     messages: 可选的多轮对话历史 [{'role': 'user'|'ai', 'content': str}, ...]
+    user_id: 当前用户ID，用于注入 SQL 占位符 {user_id}
     """
     text = question.strip()
     from llm_service import ask_llm
@@ -220,12 +261,22 @@ def process_question(question, messages=None):
 
         if action == "modify" and sql:
             try:
+                print(f'[AI Modify] user_id={user_id}')
+                print(f'[AI Modify] raw_sql: {sql}')
+                sql = _inject_user_id(sql, user_id)
+                print(f'[AI Modify] injected: {sql}')
                 db = get_db()
-                db.execute(sql)
+                # 支持多条语句：按分号拆分逐条执行
+                for stmt in sql.split(';'):
+                    stmt = stmt.strip()
+                    if stmt:
+                        db.execute(stmt)
                 db.commit()
                 db.close()
+                print(f'[AI Modify] SUCCESS')
                 return {"type": "text", "answer": answer_template or "数据已更新", "sql": sql, "chart_config": None}
             except Exception as e:
+                print(f'[AI Modify] FAILED: {e}')
                 return {"type": "error", "answer": f"数据更新失败：{e}", "chart_config": None, "sql": sql}
     else:
         start, end, time_label = _parse_time_range(text)
@@ -240,6 +291,7 @@ def process_question(question, messages=None):
         answer_template = ''
 
     try:
+        sql = _inject_user_id(sql, user_id)
         db = get_db()
         rows = [dict(r) for r in db.execute(sql).fetchall()]
         db.close()

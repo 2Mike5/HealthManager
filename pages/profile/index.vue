@@ -59,6 +59,17 @@
 				<text class="menu-arrow">›</text>
 			</view>
 			<view class="menu-divider"></view>
+			<view class="menu-item" @tap="showNutritionGoalsModal">
+				<text class="menu-icon menu-icon-nutrition">🍎</text>
+				<text class="menu-text">营养目标</text>
+				<text class="menu-arrow">›</text>
+			</view>
+			<view class="menu-divider"></view>
+			<view class="menu-item" @tap="goReport">
+				<text class="menu-icon menu-icon-report">📊</text>
+				<text class="menu-text">健康周报</text>
+				<text class="menu-arrow">›</text>
+			</view>
 			<view class="menu-item">
 				<text class="menu-icon menu-icon-dark">&#9790;</text>
 				<text class="menu-text">暗黑模式</text>
@@ -87,6 +98,7 @@ export default {
 			editTargetWeight: '',
 			isDarkMode: uni.getStorageSync('darkMode') === true,
 			goals: uni.getStorageSync("healthGoals") || { steps: 10000, sleep: 8, water: 8 },
+			nutritionGoals: uni.getStorageSync("nutritionGoals") || { protein: 80, fat: 60, carbs: 300 },
 		}
 	},
 	computed: {
@@ -127,6 +139,7 @@ export default {
 		goWeight() {
 			uni.navigateTo({ url: '/pages/profile/weight' })
 		},
+		goReport() { uni.navigateTo({ url: "/pages/report/index" }) },
 		goDiet() {
 			uni.navigateTo({ url: '/pages/profile/diet' })
 		},
@@ -171,13 +184,7 @@ export default {
 			const fc = this.isDarkMode ? '#ffffff' : '#000000'
 			uni.setNavigationBarColor({ frontColor: fc, backgroundColor: bg })
 			uni.$emit('darkModeChanged', this.isDarkMode)
-			// #ifdef H5
-			if (this.isDarkMode) {
-				document.documentElement.setAttribute('data-theme', 'dark')
-			} else {
-				document.documentElement.removeAttribute('data-theme')
-			}
-			// #endif
+			getApp().applyTheme(this.isDarkMode)
 		},
 		showGoalsModal() {
 			const g = this.goals
@@ -197,6 +204,28 @@ export default {
 						this.goals = newGoals
 						uni.setStorageSync("healthGoals", newGoals)
 						uni.showToast({ title: "目标已保存", icon: "success" })
+					}
+				}
+			})
+		},
+		showNutritionGoalsModal() {
+			const g = this.nutritionGoals
+			uni.showModal({
+				title: "营养目标设置",
+				editable: true,
+				placeholderText: "蛋白质(g),脂肪(g),碳水(g)",
+				content: g.protein + "," + g.fat + "," + g.carbs,
+				success: (res) => {
+					if (res.confirm && res.content) {
+						const parts = res.content.split(",")
+						const newGoals = {
+							protein: parseInt(parts[0]) || g.protein,
+							fat: parseInt(parts[1]) || g.fat,
+							carbs: parseInt(parts[2]) || g.carbs,
+						}
+						this.nutritionGoals = newGoals
+						uni.setStorageSync("nutritionGoals", newGoals)
+						uni.showToast({ title: "营养目标已保存", icon: "success" })
 					}
 				}
 			})
@@ -222,16 +251,18 @@ export default {
 .profile-page {
 	padding: 24rpx;
 	min-height: 100vh;
-	background: #F1F5F9;
+	background: var(--page-bg);
+	transition: background 0.3s;
 }
 
 .glass-card {
-	background: #FFFFFF;
+	background: var(--card-bg);
 	border-radius: 24rpx;
 	border: 1px solid rgba(0,0,0,0.04);
 	box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03);
 	padding: 32rpx;
 	margin-bottom: 24rpx;
+	transition: background 0.3s;
 }
 
 .user-card {
@@ -259,12 +290,12 @@ export default {
 .user-name {
 	font-size: 34rpx;
 	font-weight: 600;
-	color: #1a1a2e;
+	color: var(--text-1);
 }
 
 .user-desc {
 	font-size: 24rpx;
-	color: #999;
+	color: var(--text-3);
 	margin-top: 6rpx;
 	display: block;
 }
@@ -288,7 +319,7 @@ export default {
 
 .stat-label {
 	font-size: 22rpx;
-	color: #999;
+	color: var(--text-3);
 	margin-top: 8rpx;
 	display: block;
 }
@@ -318,7 +349,7 @@ export default {
 .menu-text {
 	flex: 1;
 	font-size: 28rpx;
-	color: #333;
+	color: var(--text-1);
 	margin-left: 20rpx;
 }
 
@@ -329,14 +360,14 @@ export default {
 
 .menu-divider {
 	height: 1px;
-	background: #f0f0f0;
+	background: var(--divider);
 	margin: 0 32rpx;
 }
 
 .logout-btn {
 	width: 100%;
 	height: 88rpx;
-	background: #fff;
+	background: var(--card-bg);
 	border: 2rpx solid #e74c3c;
 	border-radius: 44rpx;
 	color: #e74c3c;

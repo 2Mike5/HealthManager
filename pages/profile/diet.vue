@@ -36,7 +36,26 @@
 			</view>
 			<!-- 营养素环图 -->
 			<view v-if="hasNutrition" class="macro-chart">
-				<qiun-data-charts type="ring" :chartData="macroData" :opts="macroOpts" height="280rpx" />
+				<view class="macro-ring-wrap">
+					<view class="macro-ring macro-ring-protein" :style="proteinRingStyle">
+						<view class="macro-ring-inner"></view>
+					</view>
+					<view class="macro-ring macro-ring-fat" :style="fatRingStyle">
+						<view class="macro-ring-inner"></view>
+					</view>
+					<view class="macro-ring macro-ring-carbs" :style="carbsRingStyle">
+						<view class="macro-ring-inner"></view>
+					</view>
+					<view class="macro-center">
+						<text class="macro-cal">{{ summary.total_calories || 0 }}</text>
+						<text class="macro-cal-unit">kcal</text>
+					</view>
+				</view>
+				<view class="macro-legend">
+					<view class="ml-item"><view class="ml-dot" style="background:#4CAF50"></view><text>蛋白质 {{ summary.total_protein || 0 }}g</text></view>
+					<view class="ml-item"><view class="ml-dot" style="background:#FF6B6B"></view><text>脂肪 {{ summary.total_fat || 0 }}g</text></view>
+					<view class="ml-item"><view class="ml-dot" style="background:#45B7D1"></view><text>碳水 {{ summary.total_carbs || 0 }}g</text></view>
+				</view>
 			</view>
 		</view>
 
@@ -136,26 +155,23 @@ export default {
 		hasNutrition() {
 			return (this.summary.total_protein || 0) > 0 || (this.summary.total_fat || 0) > 0 || (this.summary.total_carbs || 0) > 0
 		},
-		macroData() {
-			if (!this.hasNutrition) return null
-			return {
-				series: [
-					{ name: '蛋白质', data: this.summary.total_protein || 0 },
-					{ name: '脂肪', data: this.summary.total_fat || 0 },
-					{ name: '碳水', data: this.summary.total_carbs || 0 }
-				]
-			}
+		nutritionGoals() {
+			return uni.getStorageSync('nutritionGoals') || { protein: 80, fat: 60, carbs: 300 }
 		},
-		macroOpts() {
-			return {
-				legend: { position: 'bottom', show: true },
-				dataLabel: false,
-				extra: {
-					ring: { ringWidth: 24, ringLabel: false }
-				},
-				color: ['#4CAF50', '#FF6B6B', '#45B7D1'],
-				background: 'transparent'
-			}
+		proteinRingStyle() {
+			const max = this.nutritionGoals.protein
+			const pct = Math.min((this.summary.total_protein || 0) / max, 1) * 100
+			return { background: `conic-gradient(from -90deg, #4CAF50 ${pct}%, #F1F5F9 ${pct}%)` }
+		},
+		fatRingStyle() {
+			const max = this.nutritionGoals.fat
+			const pct = Math.min((this.summary.total_fat || 0) / max, 1) * 100
+			return { background: `conic-gradient(from -90deg, #FF6B6B ${pct}%, #F1F5F9 ${pct}%)` }
+		},
+		carbsRingStyle() {
+			const max = this.nutritionGoals.carbs
+			const pct = Math.min((this.summary.total_carbs || 0) / max, 1) * 100
+			return { background: `conic-gradient(from -90deg, #45B7D1 ${pct}%, #F1F5F9 ${pct}%)` }
 		},
 		mealKeys() { return ['breakfast', 'lunch', 'dinner', 'snack'] }
 	},
@@ -346,6 +362,91 @@ export default {
 
 .macro-chart {
 	margin-top: 16rpx;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+.macro-ring-wrap {
+	position: relative;
+	width: 280rpx;
+	height: 280rpx;
+}
+.macro-ring {
+	position: absolute;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+.macro-ring-protein {
+	width: 280rpx;
+	height: 280rpx;
+	top: 0;
+	left: 0;
+}
+.macro-ring-fat {
+	width: 220rpx;
+	height: 220rpx;
+	top: 30rpx;
+	left: 30rpx;
+}
+.macro-ring-carbs {
+	width: 160rpx;
+	height: 160rpx;
+	top: 60rpx;
+	left: 60rpx;
+}
+.macro-ring-inner {
+	border-radius: 50%;
+	background: var(--card-bg-glass);
+}
+.macro-ring-protein .macro-ring-inner {
+	width: 230rpx;
+	height: 230rpx;
+}
+.macro-ring-fat .macro-ring-inner {
+	width: 170rpx;
+	height: 170rpx;
+}
+.macro-ring-carbs .macro-ring-inner {
+	width: 110rpx;
+	height: 110rpx;
+}
+.macro-center {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	text-align: center;
+}
+.macro-cal {
+	font-size: 44rpx;
+	font-weight: bold;
+	color: var(--text-1);
+	display: block;
+}
+.macro-cal-unit {
+	font-size: 22rpx;
+	color: var(--text-3);
+	display: block;
+	margin-top: 4rpx;
+}
+.macro-legend {
+	display: flex;
+	gap: 24rpx;
+	margin-top: 20rpx;
+}
+.ml-item {
+	display: flex;
+	align-items: center;
+	gap: 8rpx;
+	font-size: 22rpx;
+	color: var(--text-2);
+}
+.ml-dot {
+	width: 16rpx;
+	height: 16rpx;
+	border-radius: 50%;
 }
 
 .meal-card { }

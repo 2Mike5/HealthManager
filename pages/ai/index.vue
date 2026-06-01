@@ -76,6 +76,9 @@
 				class="input-field"
 				@confirm="sendMessage"
 			></uni-easyinput>
+			<view class="mic-btn" :class="{ recording: isRecording }" @tap="startVoice">
+				<text class="mic-icon">{{ isRecording ? "🔴" : "🎤" }}</text>
+			</view>
 			<button class="send-btn" @click="sendMessage" :disabled="!inputText.trim()">
 				<uni-icons type="paperplane" size="20" color="#fff"></uni-icons>
 			</button>
@@ -90,6 +93,7 @@ export default {
 	data() {
 		return {
 			inputText: '',
+			isRecording: false,
 			loading: false,
 			scrollTo: '',
 			messages: [
@@ -118,6 +122,56 @@ export default {
 			this.addMessage('user', text)
 			this.askAI(text)
 		},
+		startVoice() {
+			// #ifdef APP-PLUS
+			if (this.isRecording) {
+				plus.speech.stopRecognize()
+				this.isRecording = false
+				return
+			}
+			this.isRecording = true
+			const that = this
+			plus.speech.startRecognize({
+				engine: 'iFly'
+			}, function(text) {
+				that.inputText = text
+				that.isRecording = false
+			}, function(err) {
+				that.isRecording = false
+				uni.showToast({ title: '语音识别失败', icon: 'none' })
+			})
+			// #endif
+			// #ifdef H5
+			const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+			if (!SpeechRecognition) {
+				uni.showToast({ title: '此浏览器不支持语音识别', icon: 'none' })
+				return
+			}
+			if (this.isRecording) {
+				this.recognition && this.recognition.stop()
+				this.isRecording = false
+				return
+			}
+			const recognition = new SpeechRecognition()
+			recognition.lang = 'zh-CN'
+			recognition.interimResults = false
+			this.recognition = recognition
+			this.isRecording = true
+			const that = this
+			recognition.onresult = function(e) {
+				that.inputText = e.results[0][0].transcript
+				that.isRecording = false
+			}
+			recognition.onerror = function(e) {
+				that.isRecording = false
+				uni.showToast({ title: '语音识别失败', icon: 'none' })
+			}
+			recognition.onend = function() {
+				that.isRecording = false
+			}
+			recognition.start()
+			// #endif
+		},
 		addMessage(role, content, extras = {}) {
 			this.messages.push({ role, content, ...extras })
 			this.scrollToBottom()
@@ -127,6 +181,10 @@ export default {
 			uni.request({
 				url: API_BASE + '/ai/query',
 				method: 'POST',
+				header: {
+					Authorization: 'Bearer ' + (uni.getStorageSync('token') || ''),
+					'Content-Type': 'application/json'
+				},
 				data: {
 					question,
 					messages: this.messages.slice(-10).map(m => ({
@@ -134,7 +192,7 @@ export default {
 						content: m.content
 					}))
 				},
-				timeout: 20000,
+				timeout: 35000,
 				success: (res) => {
 					if (res.data && res.data.code === 200) {
 						const d = res.data.data
@@ -342,6 +400,28 @@ export default {
 	border-radius: 24px;
 	padding: 0 12px;
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.mic-btn {
+	width: 44px;
+	height: 44px;
+	border-radius: 50%;
+	background: var(--input-bg);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: all 0.2s;
+}
+.mic-btn.recording {
+	background: #FEE2E2;
+	animation: mic-pulse 1.2s infinite;
+}
+@keyframes mic-pulse {
+	0%, 100% { transform: scale(1); }
+	50% { transform: scale(1.12); }
+}
+.mic-icon {
+	font-size: 20px;
 }
 
 .send-btn {

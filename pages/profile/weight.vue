@@ -165,15 +165,18 @@ export default {
 .weight-page {
 	padding: 24rpx;
 	min-height: 100vh;
+	background: var(--page-bg);
+	transition: background 0.3s;
 }
 
 .glass-card {
-	background: rgba(255,255,255,0.75);
+	background: var(--card-bg-glass);
 	backdrop-filter: blur(20px);
 	border-radius: 20px;
 	padding: 32rpx;
 	margin-bottom: 24rpx;
-	box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+	box-shadow: var(--shadow-glass);
+	transition: background 0.3s, box-shadow 0.3s;
 }
 
 .loading-overlay {
@@ -207,18 +210,18 @@ export default {
 
 .current-label {
 	font-size: 26rpx;
-	color: #999;
+	color: var(--text-3);
 }
 
 .current-value {
 	font-size: 56rpx;
 	font-weight: bold;
-	color: #1a1a2e;
+	color: var(--text-1);
 }
 
 .current-unit {
 	font-size: 28rpx;
-	color: #999;
+	color: var(--text-3);
 }
 
 .current-right { text-align: center; }
@@ -248,12 +251,12 @@ export default {
 
 .target-text {
 	font-size: 24rpx;
-	color: #666;
+	color: var(--text-2);
 }
 
 .progress-bg {
 	height: 12rpx;
-	background: #eee;
+	background: var(--input-bg);
 	border-radius: 6rpx;
 	margin: 10rpx 0;
 	overflow: hidden;
@@ -268,13 +271,13 @@ export default {
 
 .target-diff {
 	font-size: 22rpx;
-	color: #999;
+	color: var(--text-3);
 }
 
 .card-title {
 	font-size: 30rpx;
 	font-weight: 600;
-	color: #333;
+	color: var(--text-1);
 }
 
 .chart-wrap { margin-top: 16rpx; }
@@ -299,7 +302,7 @@ export default {
 .add-input {
 	flex: 1;
 	height: 72rpx;
-	background: #f5f7fa;
+	background: var(--input-bg);
 	border-radius: 14rpx;
 	padding: 0 20rpx;
 	font-size: 26rpx;
